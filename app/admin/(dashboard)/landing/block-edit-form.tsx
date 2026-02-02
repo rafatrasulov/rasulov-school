@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,14 @@ type BlockRow = {
   props: Record<string, unknown>;
 };
 
+// ✅ Server action result type (matches your union error)
+type ActionResult = { error: string } | { success: boolean };
+
+// ✅ Type guard fixes: "Property 'error' does not exist on type ... "
+function hasError(result: ActionResult | undefined | null): result is { error: string } {
+  return !!result && "error" in result;
+}
+
 export function BlockEditForm({
   block,
   onClose,
@@ -34,29 +42,43 @@ export function BlockEditForm({
   const [props, setProps] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
-    if (block) setProps(block.props || {});
+    if (block) setProps(block.props ?? {});
   }, [block]);
 
-  if (!block) return null;
-
-  // ✅ Narrow once, then use stable locals everywhere (fixes "block is possibly null")
-  const blockId = block.id;
-  const blockType = block.type;
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-
-    const result = await updateLandingBlock(blockId, { props });
-    if (result?.error) {
-      setError(result.error);
-      return;
-    }
-    onSaved();
-  }
+  const blockId = block?.id ?? "";
+  const blockType = block?.type ?? "";
 
   const set = (key: string, value: unknown) =>
     setProps((p) => ({ ...p, [key]: value }));
+
+  const itemsText = useMemo(() => {
+    if (!block) return "";
+    if (blockType === "stepper") {
+      return JSON.stringify((props.steps as unknown[]) ?? [], null, 2);
+    }
+    return JSON.stringify((props.items as unknown[]) ?? [], null, 2);
+  }, [block, blockType, props.items, props.steps]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!block) return;
+
+    setError(null);
+
+    const result = (await updateLandingBlock(block.id, { props })) as
+      | ActionResult
+      | undefined;
+
+    if (hasError(result)) {
+      setError(result.error);
+      return;
+    }
+
+    // success path
+    onSaved();
+  }
+
+  if (!block) return null;
 
   return (
     <Dialog open={!!block} onOpenChange={(open) => !open && onClose()}>
@@ -167,14 +189,13 @@ export function BlockEditForm({
                   id="items"
                   rows={10}
                   className="rounded-xl font-mono text-sm resize-y"
-                  value={
-                    blockType === "stepper"
-                      ? JSON.stringify((props.steps as unknown[]) ?? [], null, 2)
-                      : JSON.stringify((props.items as unknown[]) ?? [], null, 2)
-                  }
+                  value={itemsText}
                   onChange={(e) => {
+                    const raw = e.target.value;
+
+                    // ✅ allow editing freely; only update props when JSON becomes valid
                     try {
-                      const arr = JSON.parse(e.target.value || "[]");
+                      const arr = JSON.parse(raw || "[]");
                       if (blockType === "stepper") set("steps", arr);
                       else set("items", arr);
                     } catch {
