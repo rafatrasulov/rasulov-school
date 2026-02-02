@@ -29,20 +29,30 @@ const messengerLabels: Record<string, string> = {
 
 interface BookingFormProps {
   slotId: string;
+  profile?: { full_name: string; email: string; grade: number | null } | null;
 }
 
-export function BookingForm({ slotId }: BookingFormProps) {
+export function BookingForm({ slotId, profile }: BookingFormProps) {
   const [experienceLevel, setExperienceLevel] = useState("beginner");
   const [preferredMessenger, setPreferredMessenger] = useState("telegram");
   const [state, formAction] = useActionState(
     async (_prev: { error?: Record<string, string[] | undefined> }, formData: FormData) => {
       formData.set("experience_level", experienceLevel);
       formData.set("preferred_messenger", preferredMessenger);
+      
+      if (profile) {
+        formData.set("full_name", profile.full_name || "Ученик");
+        formData.set("email", profile.email);
+        formData.set("phone", "не указан");
+      }
+      
       const result = await submitBooking(slotId, formData);
       return result ?? _prev;
     },
     {} as { error?: Record<string, string[] | undefined> }
   );
+
+  const showFullForm = !profile;
 
   return (
     <form action={formAction} className="space-y-6">
@@ -51,58 +61,73 @@ export function BookingForm({ slotId }: BookingFormProps) {
           {state.error._form.join(" ")}
         </div>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="full_name">Имя и фамилия *</Label>
-          <Input
-            id="full_name"
-            name="full_name"
-            required
-            placeholder="Иван Иванов"
-            className="rounded-xl"
-          />
-          {state?.error?.full_name && (
-            <p className="text-sm text-destructive">{state.error.full_name[0]}</p>
+      
+      {profile && (
+        <div className="glass rounded-lg p-5 border border-primary/20">
+          <p className="text-sm text-muted-foreground mb-2">Запись от:</p>
+          <p className="text-xl font-semibold text-foreground">{profile.full_name || profile.email}</p>
+          {profile.grade && (
+            <p className="text-sm text-primary mt-1">{profile.grade} класс</p>
           )}
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email *</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            required
-            placeholder="ivan@example.com"
-            className="rounded-xl"
-          />
-          {state?.error?.email && (
-            <p className="text-sm text-destructive">{state.error.email[0]}</p>
-          )}
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="phone">Телефон *</Label>
-        <Input
-          id="phone"
-          name="phone"
-          type="tel"
-          required
-          placeholder="+7 999 123-45-67"
-          className="rounded-xl"
-        />
-        {state?.error?.phone && (
-          <p className="text-sm text-destructive">{state.error.phone[0]}</p>
-        )}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="age_or_grade">Класс или возраст (необязательно)</Label>
-        <Input
-          id="age_or_grade"
-          name="age_or_grade"
-          placeholder="9 класс или 15 лет"
-          className="rounded-xl"
-        />
-      </div>
+      )}
+      
+      {showFullForm && (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="full_name">Имя и фамилия *</Label>
+              <Input
+                id="full_name"
+                name="full_name"
+                required
+                placeholder="Иван Иванов"
+                className="rounded-xl"
+              />
+              {state?.error?.full_name && (
+                <p className="text-sm text-destructive">{state.error.full_name[0]}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                required
+                placeholder="ivan@example.com"
+                className="rounded-xl"
+              />
+              {state?.error?.email && (
+                <p className="text-sm text-destructive">{state.error.email[0]}</p>
+              )}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Телефон *</Label>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              required
+              placeholder="+7 999 123-45-67"
+              className="rounded-xl"
+            />
+            {state?.error?.phone && (
+              <p className="text-sm text-destructive">{state.error.phone[0]}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="age_or_grade">Класс или возраст (необязательно)</Label>
+            <Input
+              id="age_or_grade"
+              name="age_or_grade"
+              placeholder="9 класс или 15 лет"
+              className="rounded-xl"
+            />
+          </div>
+        </>
+      )}
       <div className="space-y-2">
         <Label htmlFor="goal">Цель занятий *</Label>
         <Textarea

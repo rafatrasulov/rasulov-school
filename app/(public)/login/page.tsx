@@ -37,10 +37,12 @@ export default function StudentLoginPage() {
   }
 
   return (
-    <main className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-gradient-to-b from-muted/20 to-background">
-      <div className="w-full max-w-md glass rounded-xl p-8 animate-slide-up">
-        <h1 className="text-3xl font-bold gradient-text">Вход для ученика</h1>
-        <p className="mt-3 text-base text-muted-foreground">
+    <main className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-gradient-to-b from-secondary/20 to-white relative overflow-hidden">
+      <div className="absolute inset-0" style={{backgroundImage: 'radial-gradient(rgba(13,148,136,0.06) 1px, transparent 1px)', backgroundSize: '24px 24px'}} aria-hidden />
+      
+      <div className="relative w-full max-w-md glass rounded-2xl p-8 md:p-10 animate-slide-up shadow-xl">
+        <h1 className="text-4xl font-bold gradient-text">Вход для ученика</h1>
+        <p className="mt-4 text-lg text-muted-foreground">
           Введите email и пароль от учётной записи.
         </p>
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">

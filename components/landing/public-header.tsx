@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Menu, X, Calendar, ClipboardList, LogIn, UserPlus, Key } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
@@ -25,18 +26,26 @@ export function PublicHeader() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-2">
-          {navItems.map((item) => (
-            <Button
-              key={item.href}
-              asChild
-              variant={item.outlined ? "outline" : "ghost"}
-              size="default"
-              className="rounded-lg hover:bg-primary/20 transition-colors"
-            >
-              <Link href={item.href}>{item.label}</Link>
-            </Button>
-          ))}
+        <nav className="hidden md:flex items-center gap-3">
+          {navItems.map((item) => {
+            const isBooking = item.href === "/#calendar";
+            return (
+              <Button
+                key={item.href}
+                asChild
+                variant={isBooking ? "default" : item.outlined ? "outline" : "ghost"}
+                size="default"
+                className={cn(
+                  "rounded-lg transition-all duration-300",
+                  isBooking 
+                    ? "bg-primary hover:bg-primary/90 hover:scale-105 shadow-lg hover:shadow-primary/30" 
+                    : "hover:bg-primary/10"
+                )}
+              >
+                <Link href={item.href}>{item.label}</Link>
+              </Button>
+            );
+          })}
         </nav>
 
         {/* Mobile menu button */}

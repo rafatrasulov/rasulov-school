@@ -23,32 +23,57 @@ export default async function BookSlotPage({
   const { slotId } = await params;
   const supabase = await createClient();
 
-  const { data: slot, error } = await supabase
-    .from("slots")
-    .select("id, start_time, duration_minutes, status")
-    .eq("id", slotId)
-    .single();
+  const [
+    { data: slot, error },
+    { data: { user } }
+  ] = await Promise.all([
+    supabase
+      .from("slots")
+      .select("id, start_time, duration_minutes, status")
+      .eq("id", slotId)
+      .single(),
+    supabase.auth.getUser()
+  ]);
 
   if (error || !slot) notFound();
   if (slot.status !== "free") notFound();
 
+  let profile = null;
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name, email, grade, role")
+      .eq("id", user.id)
+      .eq("role", "student")
+      .maybeSingle();
+    if (data) {
+      profile = {
+        full_name: data.full_name || "",
+        email: user.email || "",
+        grade: data.grade,
+      };
+    }
+  }
+
   return (
-    <main className="min-h-screen py-12 md:py-20 bg-gradient-to-b from-muted/20 to-background">
-      <div className="container mx-auto max-w-2xl px-6">
-        <div className="glass rounded-xl p-8 md:p-10 animate-slide-up">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground gradient-text">
+    <main className="min-h-screen py-12 md:py-20 bg-gradient-to-b from-secondary/20 to-white relative overflow-hidden">
+      <div className="absolute inset-0" style={{backgroundImage: 'radial-gradient(rgba(13,148,136,0.06) 1px, transparent 1px)', backgroundSize: '24px 24px'}} aria-hidden />
+      
+      <div className="relative container mx-auto max-w-2xl px-6">
+        <div className="glass rounded-2xl p-8 md:p-12 animate-slide-up shadow-xl">
+          <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-6">
             Запись на урок
           </h1>
-          <div className="mt-4 glass-strong rounded-lg p-4">
-            <p className="text-lg text-muted-foreground">
+          <div className="glass-strong rounded-xl p-5 border border-primary/20">
+            <p className="text-xl text-foreground font-medium">
               {formatSlotDateTime(slot.start_time)}
             </p>
-            <p className="text-sm text-primary font-medium mt-1">
+            <p className="text-lg text-primary font-semibold mt-2">
               Длительность: {slot.duration_minutes} минут
             </p>
           </div>
           <div className="mt-8">
-            <BookingForm slotId={slotId} />
+            <BookingForm slotId={slotId} profile={profile} />
           </div>
           <div className="mt-6">
             <Button asChild variant="ghost" size="default" className="rounded-lg hover:bg-primary/20">

@@ -64,8 +64,9 @@ export default async function HomePage() {
     return (
       <main className="min-h-screen">
         <Hero />
-        <section className="w-full py-16 md:py-20 bg-gradient-to-b from-background via-muted/20 to-background">
-          <div className="max-w-7xl mx-auto px-6">
+        <section className="w-full py-16 md:py-24 relative overflow-hidden bg-gradient-to-br from-secondary/30 via-white to-primary/5">
+          <div className="absolute inset-0" style={{backgroundImage: 'radial-gradient(rgba(13,148,136,0.08) 1px, transparent 1px)', backgroundSize: '24px 24px'}} aria-hidden />
+          <div className="relative max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-12 animate-slide-up">
               <div className="lg:col-span-5">
                 <AboutTeacher teacher={teacher as Profile | null} />
@@ -76,8 +77,9 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
-        <section className="w-full py-16 md:py-20">
-          <div className="max-w-7xl mx-auto px-6">
+        <section className="w-full py-16 md:py-24 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(13,148,136,0.05),transparent_70%)]" aria-hidden />
+          <div className="relative max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-12 animate-slide-up">
               <div className="lg:col-span-4">
                 <Stepper />
@@ -88,8 +90,9 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
-        <section className="w-full py-16 md:py-20 bg-gradient-to-b from-background to-muted/20">
-          <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+        <section className="w-full py-16 md:py-24 relative overflow-hidden bg-gradient-to-b from-white to-secondary/20">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(6,182,212,0.05),transparent_70%)]" aria-hidden />
+          <div className="relative max-w-7xl mx-auto px-6 animate-slide-up">
             <FAQ />
           </div>
         </section>
@@ -102,6 +105,14 @@ export default async function HomePage() {
       {visibleBlocks.map((block, index) => {
         const props = (block.props || {}) as Record<string, unknown>;
         const isEven = index % 2 === 0;
+        
+        const sectionBg = isEven 
+          ? "bg-gradient-to-br from-secondary/30 via-white to-primary/5"
+          : "bg-white";
+        
+        const pattern = isEven
+          ? <div className="absolute inset-0" style={{backgroundImage: 'radial-gradient(rgba(13,148,136,0.08) 1px, transparent 1px)', backgroundSize: '24px 24px'}} aria-hidden />
+          : <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(13,148,136,0.03),transparent_70%)]" aria-hidden />;
         
         switch (block.type) {
           case "hero":
@@ -117,9 +128,10 @@ export default async function HomePage() {
             return (
               <section 
                 key={block.id} 
-                className={`w-full py-16 md:py-20 ${isEven ? 'bg-gradient-to-b from-background via-muted/20 to-background' : ''}`}
+                className={`w-full py-16 md:py-24 relative overflow-hidden ${sectionBg}`}
               >
-                <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+                {pattern}
+                <div className="relative max-w-7xl mx-auto px-6 animate-slide-up">
                   <AboutTeacher
                     teacher={teacher as Profile | null}
                     title={(props.title as string) ?? "Об учителе"}
@@ -131,9 +143,10 @@ export default async function HomePage() {
             return (
               <section 
                 key={block.id} 
-                className={`w-full py-16 md:py-20 ${isEven ? 'bg-gradient-to-b from-background via-muted/20 to-background' : ''}`}
+                className={`w-full py-16 md:py-24 relative overflow-hidden ${sectionBg}`}
               >
-                <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+                {pattern}
+                <div className="relative max-w-7xl mx-auto px-6 animate-slide-up">
                   <Benefits
                     title={props.title as string | undefined}
                     description={props.description as string | undefined}
@@ -146,9 +159,10 @@ export default async function HomePage() {
             return (
               <section 
                 key={block.id} 
-                className={`w-full py-16 md:py-20 ${isEven ? 'bg-gradient-to-b from-background via-muted/20 to-background' : ''}`}
+                className={`w-full py-16 md:py-24 relative overflow-hidden ${sectionBg}`}
               >
-                <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+                {pattern}
+                <div className="relative max-w-7xl mx-auto px-6 animate-slide-up">
                   <Stepper
                     title={props.title as string | undefined}
                     description={props.description as string | undefined}
@@ -161,9 +175,10 @@ export default async function HomePage() {
             return (
               <section 
                 key={block.id} 
-                className={`w-full py-16 md:py-20 ${isEven ? 'bg-gradient-to-b from-background via-muted/20 to-background' : ''}`}
+                className={`w-full py-16 md:py-24 relative overflow-hidden ${sectionBg}`}
               >
-                <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+                {pattern}
+                <div className="relative max-w-7xl mx-auto px-6 animate-slide-up">
                   <SlotCalendarSection
                     slots={slots ?? []}
                     title={(props.title as string) ?? "Свободные слоты"}
@@ -176,9 +191,10 @@ export default async function HomePage() {
             return (
               <section 
                 key={block.id} 
-                className={`w-full py-16 md:py-20 ${isEven ? 'bg-gradient-to-b from-background to-muted/20' : ''}`}
+                className={`w-full py-16 md:py-24 relative overflow-hidden ${sectionBg}`}
               >
-                <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+                {pattern}
+                <div className="relative max-w-7xl mx-auto px-6 animate-slide-up">
                   <FAQ
                     title={props.title as string | undefined}
                     description={props.description as string | undefined}
