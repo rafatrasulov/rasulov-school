@@ -1,22 +1,29 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AboutTeacher } from "@/components/landing/about-teacher";
+import { SlotCalendar } from "@/components/landing/slot-calendar";
+import type { Profile, Slot } from "@/lib/database.types";
 
 type HeroProps = {
   title?: string;
   subtitle?: string;
-  cta_text?: string;
+  teacher?: Profile | null;
+  slots?: Slot[];
 };
 
 const DEFAULTS = {
   title: "RasulovSchool",
   subtitle: "Репетитор по математике. 5–11 классы — от основ до ОГЭ и ЕГЭ.",
-  cta_text: "Записаться на урок",
 };
 
 export function Hero(props?: HeroProps | null) {
   const title = props?.title ?? DEFAULTS.title;
   const subtitle = props?.subtitle ?? DEFAULTS.subtitle;
-  const cta_text = props?.cta_text ?? DEFAULTS.cta_text;
+  const teacher = props?.teacher ?? null;
+  const slots = props?.slots ?? [];
   
   return (
     <section className="relative w-full min-h-[75vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-secondary/40 via-white to-primary/10">
@@ -41,13 +48,56 @@ export function Hero(props?: HeroProps | null) {
         <p className="text-2xl sm:text-3xl md:text-4xl text-foreground/80 max-w-4xl mx-auto leading-relaxed font-medium">
           {subtitle}
         </p>
-        <div className="mt-14">
+        
+        <div className="mt-14 flex flex-col sm:flex-row gap-4 justify-center items-center">
+          {/* 1. Наши преподаватели */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button 
+                size="lg" 
+                className="bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all duration-300 px-8 py-6 text-lg rounded-xl shadow-xl"
+              >
+                👨‍🏫 Наши преподаватели
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-3xl gradient-text">Наши преподаватели</DialogTitle>
+              </DialogHeader>
+              <div className="mt-6">
+                <AboutTeacher teacher={teacher} />
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* 2. Записаться на урок */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button 
+                size="lg" 
+                className="bg-accent text-accent-foreground hover:bg-accent/90 hover:scale-105 transition-all duration-300 px-8 py-6 text-lg rounded-xl shadow-xl"
+              >
+                📅 Записаться на урок
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-3xl gradient-text">Выберите удобное время</DialogTitle>
+              </DialogHeader>
+              <div className="mt-6">
+                <SlotCalendar slots={slots} title="" description="" />
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* 3. Войти в личный кабинет */}
           <Button 
             asChild 
             size="lg" 
-            className="glass-strong hover:scale-110 transition-all duration-300 px-12 py-8 text-xl rounded-2xl shadow-2xl hover:shadow-primary/40 bg-primary hover:bg-primary/90"
+            variant="outline" 
+            className="hover:bg-primary/10 hover:scale-105 transition-all duration-300 px-8 py-6 text-lg rounded-xl border-2"
           >
-            <Link href="#calendar">{cta_text}</Link>
+            <Link href="/login">🔐 Личный кабинет</Link>
           </Button>
         </div>
       </div>

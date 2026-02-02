@@ -78,7 +78,16 @@ export function PublicHeader() {
                     className={`glass p-4 rounded-lg hover:bg-primary/20 transition-all flex items-center gap-3 ${
                       item.outlined ? "border-primary/50" : ""
                     }`}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpen(false);
+                      // Для якорных ссылок плавный скролл
+                      if (item.href.startsWith('/#')) {
+                        setTimeout(() => {
+                          const id = item.href.split('#')[1];
+                          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                      }
+                    }}
                   >
                     <Icon className="h-5 w-5 text-primary" />
                     <span className="font-medium">{item.label}</span>

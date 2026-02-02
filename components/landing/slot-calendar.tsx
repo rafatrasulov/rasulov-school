@@ -66,6 +66,7 @@ export function SlotCalendar({
 }: SlotCalendarProps) {
   const today = useMemo(() => getWeekStart(new Date()), []);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
 
   const weekStart = useMemo(() => {
     const d = new Date(today);
@@ -242,21 +243,22 @@ export function SlotCalendar({
               return (
                 <button
                   key={formatDateKey(day)}
+                  onClick={() => setSelectedDayIndex(idx)}
                   className={cn(
                     "glass px-4 py-2 rounded-lg shrink-0 transition-all",
-                    idx === 0 ? "bg-primary/20 border-primary/50" : ""
+                    idx === selectedDayIndex ? "bg-primary text-primary-foreground border-primary" : ""
                   )}
                 >
-                  <div className="text-xs text-muted-foreground">{header.name}</div>
+                  <div className={cn("text-xs", idx === selectedDayIndex ? "text-primary-foreground" : "text-muted-foreground")}>{header.name}</div>
                   <div className="text-sm font-bold">{header.date}</div>
                 </button>
               );
             })}
           </div>
 
-          {/* Show first day's slots */}
+          {/* Show selected day's slots */}
           {(() => {
-            const day = weekDays[0];
+            const day = weekDays[selectedDayIndex];
             const dayKey = formatDateKey(day);
             const daySlots = slotsByDay[dayKey] ?? [];
             
