@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createClient } from "@/lib/supabase/client";
 import type { AssignmentType } from "@/lib/database.types";
+import { submitAssignment } from "./actions";
 
 interface AssignmentFormProps {
   assignmentId: string;
@@ -18,7 +18,7 @@ interface AssignmentFormProps {
 export function AssignmentForm({ assignmentId, type, options }: AssignmentFormProps) {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string; score?: number | null } | null>(null);
   const router = useRouter();
 
   const opts = Array.isArray(options) ? options : (options as { label?: string; value?: string }[] | null) ?? [];
@@ -27,28 +27,26 @@ export function AssignmentForm({ assignmentId, type, options }: AssignmentFormPr
     e.preventDefault();
     setMessage(null);
     setLoading(true);
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setMessage({ type: "error", text: "Нужно войти в аккаунт." });
-      setLoading(false);
-      return;
-    }
-    const { error } = await supabase.from("assignment_submissions").upsert(
-      {
-        assignment_id: assignmentId,
-        user_id: user.id,
-        answer: answer || null,
-        answer_json: type === "single_choice" || type === "multiple_choice" ? { value: answer } : null,
-      },
-      { onConflict: "assignment_id,user_id" }
-    );
+
+    const result = await submitAssignment(assignmentId, answer, type);
     setLoading(false);
-    if (error) {
-      setMessage({ type: "error", text: error.message });
+
+    if (result.error) {
+      setMessage({ type: "error", text: result.error });
       return;
     }
-    setMessage({ type: "success", text: "Ответ сохранён." });
+
+    if (result.score !== undefined && result.score !== null) {
+      const scoreText = result.score === 100 
+        ? "Ответ правильный! 🎉" 
+        : result.score === 0 
+        ? "Ответ неправильный. Попробуйте еще раз." 
+        : `Ответ оценен на ${result.score} баллов.`;
+      setMessage({ type: result.score > 0 ? "success" : "error", text: scoreText, score: result.score });
+    } else {
+      setMessage({ type: "success", text: "Ответ сохранён и отправлен на проверку учителю." });
+    }
+
     router.refresh();
   }
 

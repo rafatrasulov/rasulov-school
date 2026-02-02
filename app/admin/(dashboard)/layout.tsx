@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Calendar, ClipboardList, FileText, Home, LogOut, User } from "lucide-react";
+import { BookOpen, Calendar, ClipboardList, FileText, Home, LogOut, User, Users } from "lucide-react";
 import { logout } from "../actions";
 
 export default async function AdminDashboardLayout({
@@ -67,6 +67,12 @@ export default async function AdminDashboardLayout({
             <Button variant="ghost" className={navBtn} size="default">
               <FileText className={iconClass} />
               Заявки
+            </Button>
+          </Link>
+          <Link href="/admin/students">
+            <Button variant="ghost" className={navBtn} size="default">
+              <Users className={iconClass} />
+              Ученики
             </Button>
           </Link>
           <span className="hidden md:block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-2">Аккаунт</span>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { updateAssignment, deleteAssignment } from "./actions";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, FileCheck } from "lucide-react";
 
 const TYPE_LABELS: Record<string, string> = {
   text: "Текст",
@@ -131,10 +132,18 @@ export function AssignmentsList({
       )}
       <ul className="space-y-2">
         {assignments.map((a) => (
-          <li key={a.id} className="flex items-center justify-between rounded-xl border border-border p-4">
-            <span className="font-medium">{a.title}</span>
-            <span className="text-sm text-muted-foreground">{TYPE_LABELS[a.type] ?? a.type}</span>
-            <div className="flex gap-2">
+          <li key={a.id} className="flex items-center justify-between gap-4 rounded-xl border border-border p-4">
+            <div className="flex-1 min-w-0">
+              <span className="font-medium block">{a.title}</span>
+              <span className="text-sm text-muted-foreground">{TYPE_LABELS[a.type] ?? a.type}</span>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Button asChild variant="outline" size="sm" className="rounded-lg gap-2">
+                <Link href={`/admin/assignments/${a.id}`}>
+                  <FileCheck className="h-4 w-4" />
+                  Ответы
+                </Link>
+              </Button>
               <Button variant="ghost" size="sm" className="rounded-lg" onClick={() => { setEditing(a); setType(a.type); }}>Изменить</Button>
               <Button variant="ghost" size="sm" className="rounded-lg text-destructive hover:text-destructive" onClick={() => handleDelete(a.id)}>Удалить</Button>
             </div>
