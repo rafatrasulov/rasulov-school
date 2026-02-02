@@ -41,6 +41,7 @@ export function BlockEditForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!block) return;
     setError(null);
     const result = await updateLandingBlock(block.id, { props });
     if (result?.error) {
