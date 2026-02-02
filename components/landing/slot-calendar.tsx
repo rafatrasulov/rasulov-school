@@ -150,12 +150,12 @@ export function SlotCalendar({
         <div className="hidden md:block overflow-x-auto">
           <div className="min-w-[900px]">
             {/* Day headers */}
-            <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-white/10 mb-2">
-              <div className="p-3 text-xs text-muted-foreground">Время</div>
-              {weekDays.map((day) => {
+            <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-primary/20 mb-2">
+              <div className="p-3 text-xs text-muted-foreground border-r border-primary/20">Время</div>
+              {weekDays.map((day, idx) => {
                 const header = formatDayHeader(day);
                 return (
-                  <div key={formatDateKey(day)} className="p-3 text-center">
+                  <div key={formatDateKey(day)} className={cn("p-3 text-center", idx < 6 && "border-r border-primary/20")}>
                     <div className="text-sm text-muted-foreground mb-1">{header.name}</div>
                     <div className="text-xl font-bold text-foreground">{header.date}</div>
                   </div>
@@ -166,24 +166,24 @@ export function SlotCalendar({
             {/* Time grid */}
             <div className="grid grid-cols-[80px_repeat(7,1fr)]">
               {/* Left column: hours */}
-              <div className="border-r border-white/5">
-                {HOURS.map((hour) => (
-                  <div key={hour} className="h-16 border-b border-white/5 p-2 text-sm text-muted-foreground">
+              <div className="border-r border-primary/20">
+                {HOURS.map((hour, idx) => (
+                  <div key={hour} className={cn("h-16 p-2 text-sm text-muted-foreground", idx < HOURS.length - 1 && "border-b border-primary/10")}>
                     {hour}:00
                   </div>
                 ))}
               </div>
 
               {/* Day columns with slots */}
-              {weekDays.map((day) => {
+              {weekDays.map((day, dayIdx) => {
                 const dayKey = formatDateKey(day);
                 const daySlots = slotsByDay[dayKey] ?? [];
                 
                 return (
-                  <div key={dayKey} className="border-r border-white/5 relative">
+                  <div key={dayKey} className={cn("relative", dayIdx < 6 && "border-r border-primary/20")}>
                     {/* Background hour lines */}
-                    {HOURS.map((hour) => (
-                      <div key={hour} className="h-16 border-b border-white/5" />
+                    {HOURS.map((hour, hourIdx) => (
+                      <div key={hour} className={cn("h-16", hourIdx < HOURS.length - 1 && "border-b border-primary/10")} />
                     ))}
 
                     {/* Slots positioned absolutely */}
@@ -237,23 +237,28 @@ export function SlotCalendar({
 
         {/* Mobile view: one day at a time */}
         <div className="md:hidden">
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-            {weekDays.map((day, idx) => {
-              const header = formatDayHeader(day);
-              return (
-                <button
-                  key={formatDateKey(day)}
-                  onClick={() => setSelectedDayIndex(idx)}
-                  className={cn(
-                    "glass px-4 py-2 rounded-lg shrink-0 transition-all",
-                    idx === selectedDayIndex ? "bg-primary text-primary-foreground border-primary" : ""
-                  )}
-                >
-                  <div className={cn("text-xs", idx === selectedDayIndex ? "text-primary-foreground" : "text-muted-foreground")}>{header.name}</div>
-                  <div className="text-sm font-bold">{header.date}</div>
-                </button>
-              );
-            })}
+          {/* Day selector - sticky */}
+          <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 -mx-6 px-6 pb-4 border-b border-primary/10 mb-4">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              {weekDays.map((day, idx) => {
+                const header = formatDayHeader(day);
+                return (
+                  <button
+                    key={formatDateKey(day)}
+                    onClick={() => setSelectedDayIndex(idx)}
+                    className={cn(
+                      "glass px-4 py-2 rounded-lg shrink-0 transition-all border",
+                      idx === selectedDayIndex 
+                        ? "bg-primary text-primary-foreground border-primary shadow-lg" 
+                        : "border-primary/20 hover:border-primary/40"
+                    )}
+                  >
+                    <div className={cn("text-xs font-medium", idx === selectedDayIndex ? "text-primary-foreground" : "text-muted-foreground")}>{header.name}</div>
+                    <div className="text-sm font-bold">{header.date}</div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Show selected day's slots */}
@@ -263,56 +268,58 @@ export function SlotCalendar({
             const daySlots = slotsByDay[dayKey] ?? [];
             
             return (
-              <div className="grid grid-cols-[60px_1fr]">
-                <div className="border-r border-white/5">
-                  {HOURS.map((hour) => (
-                    <div key={hour} className="h-16 border-b border-white/5 p-1 text-xs text-muted-foreground">
-                      {hour}:00
-                    </div>
-                  ))}
-                </div>
-
-                <div className="relative">
-                  {HOURS.map((hour) => (
-                    <div key={hour} className="h-16 border-b border-white/5" />
-                  ))}
-
-                  {daySlots.map((slot) => {
-                    if (slot.status === "cancelled") return null;
-                    const position = calculateSlotPosition(slot.start_time);
-                    const isFree = slot.status === "free";
-                    
-                    return isFree ? (
-                      <Link
-                        key={slot.id}
-                        href={`/book/${slot.id}`}
-                        className="absolute left-1 right-1 rounded-lg p-2 text-xs bg-gradient-to-br from-primary/90 to-primary hover:scale-105 transition-all flex flex-col justify-center overflow-hidden"
-                        style={{ 
-                          top: `${position.top}px`, 
-                          height: `${position.height}px`,
-                          minHeight: `${position.height}px`,
-                          maxHeight: `${position.height}px`
-                        }}
-                      >
-                        <div className="font-bold text-primary-foreground truncate">{position.time}</div>
-                        <div className="text-xs text-primary-foreground/90 truncate">{slot.duration_minutes} мин</div>
-                      </Link>
-                    ) : (
-                      <div
-                        key={slot.id}
-                        className="absolute left-1 right-1 rounded-lg p-2 text-xs bg-muted/60 text-muted-foreground flex flex-col justify-center overflow-hidden"
-                        style={{ 
-                          top: `${position.top}px`, 
-                          height: `${position.height}px`,
-                          minHeight: `${position.height}px`,
-                          maxHeight: `${position.height}px`
-                        }}
-                      >
-                        <div className="font-semibold truncate">{position.time}</div>
-                        <div className="text-xs opacity-70 truncate">Занято</div>
+              <div className="border border-primary/20 rounded-lg overflow-hidden">
+                <div className="grid grid-cols-[70px_1fr]">
+                  <div className="border-r border-primary/20 bg-muted/30">
+                    {HOURS.map((hour, idx) => (
+                      <div key={hour} className={cn("h-16 p-2 text-xs text-muted-foreground font-medium flex items-center justify-center", idx < HOURS.length - 1 && "border-b border-primary/10")}>
+                        {hour}:00
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
+
+                  <div className="relative bg-background">
+                    {HOURS.map((hour, idx) => (
+                      <div key={hour} className={cn("h-16", idx < HOURS.length - 1 && "border-b border-primary/10")} />
+                    ))}
+
+                    {daySlots.map((slot) => {
+                      if (slot.status === "cancelled") return null;
+                      const position = calculateSlotPosition(slot.start_time);
+                      const isFree = slot.status === "free";
+                      
+                      return isFree ? (
+                        <Link
+                          key={slot.id}
+                          href={`/book/${slot.id}`}
+                          className="absolute left-2 right-2 rounded-lg p-3 text-sm bg-gradient-to-br from-primary to-primary/90 hover:from-primary/90 hover:to-primary active:scale-95 transition-all flex flex-col justify-center shadow-md border border-primary/30"
+                          style={{ 
+                            top: `${position.top}px`, 
+                            height: `${position.height}px`,
+                            minHeight: `${position.height}px`,
+                            maxHeight: `${position.height}px`
+                          }}
+                        >
+                          <div className="font-bold text-primary-foreground truncate">{position.time}</div>
+                          <div className="text-xs text-primary-foreground/90 truncate">{slot.duration_minutes} мин</div>
+                        </Link>
+                      ) : (
+                        <div
+                          key={slot.id}
+                          className="absolute left-2 right-2 rounded-lg p-3 text-sm bg-muted/80 text-muted-foreground flex flex-col justify-center border border-border"
+                          style={{ 
+                            top: `${position.top}px`, 
+                            height: `${position.height}px`,
+                            minHeight: `${position.height}px`,
+                            maxHeight: `${position.height}px`
+                          }}
+                        >
+                          <div className="font-semibold truncate">{position.time}</div>
+                          <div className="text-xs opacity-70 truncate">Занято</div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             );

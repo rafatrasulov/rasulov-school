@@ -59,9 +59,12 @@ export function PublicHeader() {
 
         {/* Mobile drawer */}
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="fixed inset-y-0 right-0 left-auto w-[300px] max-w-[85vw] glass-strong rounded-l-2xl p-6 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right">
+          <DialogContent 
+            showCloseButton={false}
+            className="fixed inset-y-0 right-0 left-auto top-0 translate-x-0 translate-y-0 h-full w-[300px] max-w-[85vw] glass-strong rounded-l-2xl rounded-r-none p-6 m-0 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right border-l border-y-0 border-r-0"
+          >
             <button
-              className="absolute top-6 right-6 glass p-2 rounded-lg hover:bg-destructive/20 transition-colors"
+              className="absolute top-6 right-6 glass p-2 rounded-lg hover:bg-destructive/20 transition-colors z-10"
               onClick={() => setOpen(false)}
               aria-label="Закрыть меню"
             >

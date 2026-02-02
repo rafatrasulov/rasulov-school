@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AboutTeacher } from "@/components/landing/about-teacher";
-import { SlotCalendar } from "@/components/landing/slot-calendar";
 import type { Profile, Slot } from "@/lib/database.types";
 
 type HeroProps = {
@@ -71,24 +70,21 @@ export function Hero(props?: HeroProps | null) {
           </Dialog>
 
           {/* 2. Записаться на урок */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                size="lg" 
-                className="bg-accent text-accent-foreground hover:bg-accent/90 hover:scale-105 transition-all duration-300 px-8 py-6 text-lg rounded-xl shadow-xl"
-              >
-                📅 Записаться на урок
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-3xl gradient-text">Выберите удобное время</DialogTitle>
-              </DialogHeader>
-              <div className="mt-6">
-                <SlotCalendar slots={slots} title="" description="" />
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            asChild
+            size="lg" 
+            className="bg-accent text-accent-foreground hover:bg-accent/90 hover:scale-105 transition-all duration-300 px-8 py-6 text-lg rounded-xl shadow-xl"
+          >
+            <Link 
+              href="#calendar"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('calendar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              📅 Записаться на урок
+            </Link>
+          </Button>
 
           {/* 3. Войти в личный кабинет */}
           <Button 

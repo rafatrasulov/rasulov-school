@@ -147,6 +147,13 @@
   .gradient-text {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-teal-600 via-cyan-500 to-blue-600;
   }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes fadeIn {
