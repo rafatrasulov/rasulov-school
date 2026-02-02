@@ -38,15 +38,15 @@ export default function StudentRegisterPage() {
   }
 
   return (
-    <main className="min-h-[70vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <h1 className="text-xl font-bold text-foreground">Регистрация ученика</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+    <main className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-gradient-to-b from-muted/20 to-background">
+      <div className="w-full max-w-md glass rounded-xl p-8 animate-slide-up">
+        <h1 className="text-3xl font-bold gradient-text">Регистрация ученика</h1>
+        <p className="mt-3 text-base text-muted-foreground">
           Создайте учётную запись, чтобы пользоваться личным кабинетом.
         </p>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           {error && (
-            <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
+            <div className="glass-strong rounded-lg p-3 text-sm text-destructive border border-destructive/30">
               {error}
             </div>
           )}
@@ -86,18 +86,18 @@ export default function StudentRegisterPage() {
               className="rounded-xl"
             />
           </div>
-          <Button type="submit" className="w-full rounded-xl" disabled={loading}>
+          <Button type="submit" className="w-full rounded-lg glass-strong hover:bg-primary hover:scale-105 transition-all py-6 text-lg" disabled={loading}>
             {loading ? "Регистрация..." : "Зарегистрироваться"}
           </Button>
         </form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-base text-muted-foreground">
           Уже есть аккаунт?{" "}
-          <Link href="/login" className="text-primary hover:underline">
+          <Link href="/login" className="text-primary hover:text-accent transition-colors font-medium">
             Вход
           </Link>
         </p>
-        <p className="mt-2 text-center text-sm text-muted-foreground">
-          <Link href="/" className="text-primary hover:underline">
+        <p className="mt-3 text-center text-base text-muted-foreground">
+          <Link href="/" className="text-primary hover:text-accent transition-colors font-medium">
             На главную
           </Link>
         </p>

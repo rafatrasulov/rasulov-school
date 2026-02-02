@@ -15,6 +15,12 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: "RasulovSchool — Репетитор по математике Расулов Рафат Абульфатович",
   description: "Онлайн-школа математики RasulovSchool. Индивидуальные уроки с репетитором Расуловым Рафатом Абульфатовичем.",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+  },
+  themeColor: "#0a0e1a",
 };
 
 export default function RootLayout({

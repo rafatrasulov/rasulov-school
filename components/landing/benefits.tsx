@@ -1,10 +1,3 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Calculator, Target, Users, Zap } from "lucide-react";
 
 const ICONS = [Target, Calculator, Users, Zap];
@@ -26,33 +19,34 @@ export function Benefits(props?: BenefitsProps | null) {
   const title = props?.title ?? "Почему стоит заниматься";
   const description = props?.description ?? "Системные занятия с репетитором дают результат быстрее.";
   const items = Array.isArray(props?.items) && props.items.length > 0 ? props.items : DEFAULT_ITEMS;
+  
   return (
-    <Card className="h-full rounded-3xl border-2 border-primary/10 bg-card shadow-sm overflow-hidden">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-2xl md:text-3xl">{title}</CardTitle>
-        <CardDescription className="text-base">{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {items.map((item, i) => (
+    <div className="glass rounded-xl p-8 hover:scale-[1.01] transition-all duration-300">
+      <div className="mb-6">
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{title}</h2>
+        <p className="text-lg text-muted-foreground">{description}</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {items.map((item, i) => {
+          const Icon = ICONS[i % ICONS.length];
+          return (
             <div
               key={i}
-              className="flex gap-3 rounded-2xl bg-muted/50 p-4"
+              className="glass-strong rounded-xl p-5 hover:bg-primary/10 transition-all duration-300 group"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                {ICONS[i % ICONS.length] && (() => {
-                  const Icon = ICONS[i % ICONS.length];
-                  return <Icon className="h-5 w-5" />;
-                })()}
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground">{item.title ?? ""}</h3>
-                <p className="text-sm text-muted-foreground">{item.description ?? ""}</p>
+              <div className="flex gap-4 items-start">
+                <div className="glass rounded-lg p-3 group-hover:bg-primary/20 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all">
+                  <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg text-foreground mb-1">{item.title ?? ""}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.description ?? ""}</p>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          );
+        })}
+      </div>
+    </div>
   );
 }

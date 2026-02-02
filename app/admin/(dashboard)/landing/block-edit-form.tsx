@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,14 +21,6 @@ type BlockRow = {
   props: Record<string, unknown>;
 };
 
-// ✅ Server action result type (matches your union error)
-type ActionResult = { error: string } | { success: boolean };
-
-// ✅ Type guard fixes: "Property 'error' does not exist on type ... "
-function hasError(result: ActionResult | undefined | null): result is { error: string } {
-  return !!result && "error" in result;
-}
-
 export function BlockEditForm({
   block,
   onClose,
@@ -42,59 +34,35 @@ export function BlockEditForm({
   const [props, setProps] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
-    if (block) setProps(block.props ?? {});
+    if (block) setProps(block.props || {});
   }, [block]);
 
-  const blockId = block?.id ?? "";
-  const blockType = block?.type ?? "";
-
-  const set = (key: string, value: unknown) =>
-    setProps((p) => ({ ...p, [key]: value }));
-
-  const itemsText = useMemo(() => {
-    if (!block) return "";
-    if (blockType === "stepper") {
-      return JSON.stringify((props.steps as unknown[]) ?? [], null, 2);
-    }
-    return JSON.stringify((props.items as unknown[]) ?? [], null, 2);
-  }, [block, blockType, props.items, props.steps]);
+  if (!block) return null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!block) return;
-
     setError(null);
-
-    const result = (await updateLandingBlock(block.id, { props })) as
-      | ActionResult
-      | undefined;
-
-    if (hasError(result)) {
+    const result = await updateLandingBlock(block.id, { props });
+    if (result?.error) {
       setError(result.error);
       return;
     }
-
-    // success path
     onSaved();
   }
 
-  if (!block) return null;
+  const set = (key: string, value: unknown) => setProps((p) => ({ ...p, [key]: value }));
 
   return (
     <Dialog open={!!block} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="rounded-2xl sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Редактировать блок: {blockType}</DialogTitle>
+          <DialogTitle>Редактировать блок: {block.type}</DialogTitle>
         </DialogHeader>
-
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           {error && (
-            <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
+            <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
           )}
-
-          {blockType === "hero" && (
+          {block.type === "hero" && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="title">Заголовок</Label>
@@ -105,7 +73,6 @@ export function BlockEditForm({
                   className="rounded-xl"
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="subtitle">Подзаголовок</Label>
                 <Input
@@ -115,7 +82,6 @@ export function BlockEditForm({
                   className="rounded-xl"
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="cta_text">Текст кнопки</Label>
                 <Input
@@ -127,8 +93,7 @@ export function BlockEditForm({
               </div>
             </>
           )}
-
-          {(blockType === "about_teacher" || blockType === "calendar") && (
+          {(block.type === "about_teacher" || block.type === "calendar") && (
             <div className="space-y-2">
               <Label htmlFor="title">Заголовок</Label>
               <Input
@@ -137,8 +102,7 @@ export function BlockEditForm({
                 onChange={(e) => set("title", e.target.value)}
                 className="rounded-xl"
               />
-
-              {blockType === "calendar" && (
+              {block.type === "calendar" && (
                 <div className="space-y-2 mt-2">
                   <Label htmlFor="description">Описание</Label>
                   <Input
@@ -151,10 +115,7 @@ export function BlockEditForm({
               )}
             </div>
           )}
-
-          {(blockType === "benefits" ||
-            blockType === "stepper" ||
-            blockType === "faq") && (
+          {(block.type === "benefits" || block.type === "stepper" || block.type === "faq") && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="title">Заголовок</Label>
@@ -165,7 +126,6 @@ export function BlockEditForm({
                   className="rounded-xl"
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="description">Описание (подзаголовок)</Label>
                 <Input
@@ -175,28 +135,25 @@ export function BlockEditForm({
                   className="rounded-xl"
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="items">
-                  {blockType === "benefits" &&
-                    "Пункты (JSON: массив {title, description})"}
-                  {blockType === "stepper" &&
-                    "Шаги (JSON: массив {title, description})"}
-                  {blockType === "faq" && "Вопросы (JSON: массив {q, a})"}
+                  {block.type === "benefits" && "Пункты (JSON: массив {title, description})"}
+                  {block.type === "stepper" && "Шаги (JSON: массив {title, description})"}
+                  {block.type === "faq" && "Вопросы (JSON: массив {q, a})"}
                 </Label>
-
                 <Textarea
                   id="items"
                   rows={10}
                   className="rounded-xl font-mono text-sm resize-y"
-                  value={itemsText}
+                  value={
+                    block.type === "stepper"
+                      ? JSON.stringify((props.steps as unknown[]) ?? [], null, 2)
+                      : JSON.stringify((props.items as unknown[]) ?? [], null, 2)
+                  }
                   onChange={(e) => {
-                    const raw = e.target.value;
-
-                    // ✅ allow editing freely; only update props when JSON becomes valid
                     try {
-                      const arr = JSON.parse(raw || "[]");
-                      if (blockType === "stepper") set("steps", arr);
+                      const arr = JSON.parse(e.target.value || "[]");
+                      if (block.type === "stepper") set("steps", arr);
                       else set("items", arr);
                     } catch {
                       // ignore invalid json while typing
@@ -206,17 +163,9 @@ export function BlockEditForm({
               </div>
             </>
           )}
-
           <div className="flex gap-2 pt-2">
-            <Button type="submit" className="rounded-xl">
-              Сохранить
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="rounded-xl"
-              onClick={onClose}
-            >
+            <Button type="submit" className="rounded-xl">Сохранить</Button>
+            <Button type="button" variant="outline" className="rounded-xl" onClick={onClose}>
               Отмена
             </Button>
           </div>

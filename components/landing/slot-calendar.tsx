@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Slot } from "@/lib/database.types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const DAY_NAMES = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+const HOURS = Array.from({ length: 13 }, (_, i) => i + 8); // 8:00 - 20:00
 
 function getWeekStart(d: Date): Date {
   const date = new Date(d);
@@ -22,30 +23,47 @@ function formatDateKey(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function formatSlotTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleTimeString("ru-RU", {
+function formatDayHeader(date: Date): { name: string; date: string } {
+  const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
+  return {
+    name: DAY_NAMES[dayIndex],
+    date: date.toLocaleDateString("ru-RU", {
+      day: "numeric",
+      month: "short",
+    }),
+  };
+}
+
+function calculateSlotPosition(startTime: string): { top: number; height: number; time: string } {
+  const date = new Date(startTime);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  
+  const totalMinutesFrom8 = (hours - 8) * 60 + minutes;
+  const pixelsPerMinute = 64 / 60; // 64px = 1 hour
+  const top = totalMinutesFrom8 * pixelsPerMinute;
+  
+  const time = date.toLocaleTimeString("ru-RU", {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function formatDayHeader(date: Date): string {
-  return date.toLocaleDateString("ru-RU", {
-    day: "numeric",
-    month: "short",
-  });
+  
+  return { top, height: 60, time }; // Default 60 minutes
 }
 
 interface SlotCalendarProps {
   slots: Slot[];
   title?: string;
   description?: string;
-  /** Optional action (e.g. "Все слоты" button) rendered next to the title */
   headerAction?: React.ReactNode;
 }
 
-export function SlotCalendar({ slots, title = "Свободные слоты", description = "Выберите удобное время и нажмите «Записаться».", headerAction }: SlotCalendarProps) {
+export function SlotCalendar({ 
+  slots, 
+  title = "Свободные слоты", 
+  description = "Выберите удобное время и нажмите «Записаться».", 
+  headerAction 
+}: SlotCalendarProps) {
   const today = useMemo(() => getWeekStart(new Date()), []);
   const [weekOffset, setWeekOffset] = useState(0);
 
@@ -74,15 +92,6 @@ export function SlotCalendar({ slots, title = "Свободные слоты", d
         map[key].push(slot);
       }
     });
-    weekDays.forEach((day) => {
-      const key = formatDateKey(day);
-      if (map[key]) {
-        map[key].sort(
-          (a, b) =>
-          new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
-        );
-      }
-    });
     return map;
   }, [slots, weekDays]);
 
@@ -90,17 +99,17 @@ export function SlotCalendar({ slots, title = "Свободные слоты", d
   const canGoNext = weekOffset < 2;
 
   return (
-    <div id="calendar" className="rounded-3xl border-2 border-primary/10 bg-card p-6 shadow-sm scroll-mt-20">
+    <div id="calendar" className="glass rounded-xl overflow-hidden scroll-mt-20">
       {(title || description || headerAction) ? (
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4 p-6 border-b border-white/10">
           <div>
             {title ? (
-              <h2 className="text-2xl font-bold text-foreground md:text-3xl">
+              <h2 className="text-3xl font-bold text-foreground md:text-4xl">
                 {title}
               </h2>
             ) : null}
             {description ? (
-              <p className="mt-2 text-muted-foreground">
+              <p className="mt-2 text-lg text-muted-foreground">
                 {description}
               </p>
             ) : null}
@@ -109,82 +118,204 @@ export function SlotCalendar({ slots, title = "Свободные слоты", d
         </div>
       ) : null}
 
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-11 w-11 rounded-xl"
-          onClick={() => setWeekOffset((o) => o - 1)}
-          disabled={!canGoPrev}
-          aria-label="Предыдущая неделя"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <span className="min-w-[200px] text-center font-medium text-foreground text-base md:text-lg">
-          Неделя {weekStart.getDate()}.{weekStart.getMonth() + 1} —{" "}
-          {weekDays[6].getDate()}.{weekDays[6].getMonth() + 1}
-        </span>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-11 w-11 rounded-xl"
-          onClick={() => setWeekOffset((o) => o + 1)}
-          disabled={!canGoNext}
-          aria-label="Следующая неделя"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </Button>
-      </div>
+      <div className="p-6">
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 rounded-lg glass hover:bg-primary/20"
+            onClick={() => setWeekOffset((o) => o - 1)}
+            disabled={!canGoPrev}
+            aria-label="Предыдущая неделя"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <span className="min-w-[220px] text-center font-semibold text-foreground text-lg">
+            {weekStart.getDate()}.{weekStart.getMonth() + 1} — {weekDays[6].getDate()}.{weekDays[6].getMonth() + 1}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 rounded-lg glass hover:bg-primary/20"
+            onClick={() => setWeekOffset((o) => o + 1)}
+            disabled={!canGoNext}
+            aria-label="Следующая неделя"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
 
-      <div className="mt-6 grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7">
-        {weekDays.map((day) => {
-          const key = formatDateKey(day);
-          const daySlots = slotsByDay[key] ?? [];
-          return (
-            <Card
-              key={key}
-              className="rounded-2xl border-border/50 shadow-sm bg-muted/30 p-4 md:p-5"
-            >
-              <CardHeader className="p-0 pb-3">
-                <div className="text-sm font-medium text-muted-foreground">
-                  {DAY_NAMES[day.getDay() === 0 ? 6 : day.getDay() - 1]}
-                </div>
-                <div className="text-xl font-semibold text-foreground">
-                  {formatDayHeader(day)}
-                </div>
-              </CardHeader>
-              <CardContent className="p-0 space-y-3">
-                {daySlots.length === 0 ? (
-                  <p className="text-muted-foreground py-2 text-sm">Нет слотов</p>
-                ) : (
-                  daySlots.map((slot) => {
-                    const isFree = slot.status === "free";
-                    if (slot.status === "cancelled") return null;
-                    return isFree ? (
-                      <Button
-                        key={slot.id}
-                        asChild
-                        size="default"
-                        className="w-full rounded-xl py-5 text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90"
-                      >
-                        <Link href={`/book/${slot.id}`}>
-                          {formatSlotTime(slot.start_time)} — {slot.duration_minutes} мин
+        {/* Desktop view: all 7 days */}
+        <div className="hidden md:block overflow-x-auto">
+          <div className="min-w-[900px]">
+            {/* Day headers */}
+            <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-white/10 mb-2">
+              <div className="p-3 text-xs text-muted-foreground">Время</div>
+              {weekDays.map((day) => {
+                const header = formatDayHeader(day);
+                return (
+                  <div key={formatDateKey(day)} className="p-3 text-center">
+                    <div className="text-sm text-muted-foreground mb-1">{header.name}</div>
+                    <div className="text-xl font-bold text-foreground">{header.date}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Time grid */}
+            <div className="grid grid-cols-[80px_repeat(7,1fr)]">
+              {/* Left column: hours */}
+              <div className="border-r border-white/5">
+                {HOURS.map((hour) => (
+                  <div key={hour} className="h-16 border-b border-white/5 p-2 text-sm text-muted-foreground">
+                    {hour}:00
+                  </div>
+                ))}
+              </div>
+
+              {/* Day columns with slots */}
+              {weekDays.map((day) => {
+                const dayKey = formatDateKey(day);
+                const daySlots = slotsByDay[dayKey] ?? [];
+                
+                return (
+                  <div key={dayKey} className="border-r border-white/5 relative">
+                    {/* Background hour lines */}
+                    {HOURS.map((hour) => (
+                      <div key={hour} className="h-16 border-b border-white/5" />
+                    ))}
+
+                    {/* Slots positioned absolutely */}
+                    {daySlots.map((slot) => {
+                      if (slot.status === "cancelled") return null;
+                      const position = calculateSlotPosition(slot.start_time);
+                      const isFree = slot.status === "free";
+                      
+                      return isFree ? (
+                        <Link
+                          key={slot.id}
+                          href={`/book/${slot.id}`}
+                          className={cn(
+                            "absolute left-1 right-1 rounded-lg p-2 text-xs overflow-hidden",
+                            "bg-gradient-to-br from-primary/90 to-primary cursor-pointer",
+                            "hover:scale-105 hover:shadow-lg hover:shadow-primary/50",
+                            "transition-all duration-300 flex flex-col justify-center"
+                          )}
+                          style={{ 
+                            top: `${position.top}px`, 
+                            height: `${position.height}px`,
+                            minHeight: `${position.height}px`,
+                            maxHeight: `${position.height}px`
+                          }}
+                        >
+                          <div className="font-bold text-primary-foreground truncate">{position.time}</div>
+                          <div className="text-xs text-primary-foreground/90 truncate">{slot.duration_minutes} мин</div>
                         </Link>
-                      </Button>
+                      ) : (
+                        <div
+                          key={slot.id}
+                          className="absolute left-1 right-1 rounded-lg p-2 text-xs bg-muted/60 text-muted-foreground cursor-not-allowed flex flex-col justify-center overflow-hidden"
+                          style={{ 
+                            top: `${position.top}px`, 
+                            height: `${position.height}px`,
+                            minHeight: `${position.height}px`,
+                            maxHeight: `${position.height}px`
+                          }}
+                        >
+                          <div className="font-semibold truncate">{position.time}</div>
+                          <div className="text-xs opacity-70 truncate">Занято</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile view: one day at a time */}
+        <div className="md:hidden">
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            {weekDays.map((day, idx) => {
+              const header = formatDayHeader(day);
+              return (
+                <button
+                  key={formatDateKey(day)}
+                  className={cn(
+                    "glass px-4 py-2 rounded-lg shrink-0 transition-all",
+                    idx === 0 ? "bg-primary/20 border-primary/50" : ""
+                  )}
+                >
+                  <div className="text-xs text-muted-foreground">{header.name}</div>
+                  <div className="text-sm font-bold">{header.date}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Show first day's slots */}
+          {(() => {
+            const day = weekDays[0];
+            const dayKey = formatDateKey(day);
+            const daySlots = slotsByDay[dayKey] ?? [];
+            
+            return (
+              <div className="grid grid-cols-[60px_1fr]">
+                <div className="border-r border-white/5">
+                  {HOURS.map((hour) => (
+                    <div key={hour} className="h-16 border-b border-white/5 p-1 text-xs text-muted-foreground">
+                      {hour}:00
+                    </div>
+                  ))}
+                </div>
+
+                <div className="relative">
+                  {HOURS.map((hour) => (
+                    <div key={hour} className="h-16 border-b border-white/5" />
+                  ))}
+
+                  {daySlots.map((slot) => {
+                    if (slot.status === "cancelled") return null;
+                    const position = calculateSlotPosition(slot.start_time);
+                    const isFree = slot.status === "free";
+                    
+                    return isFree ? (
+                      <Link
+                        key={slot.id}
+                        href={`/book/${slot.id}`}
+                        className="absolute left-1 right-1 rounded-lg p-2 text-xs bg-gradient-to-br from-primary/90 to-primary hover:scale-105 transition-all flex flex-col justify-center overflow-hidden"
+                        style={{ 
+                          top: `${position.top}px`, 
+                          height: `${position.height}px`,
+                          minHeight: `${position.height}px`,
+                          maxHeight: `${position.height}px`
+                        }}
+                      >
+                        <div className="font-bold text-primary-foreground truncate">{position.time}</div>
+                        <div className="text-xs text-primary-foreground/90 truncate">{slot.duration_minutes} мин</div>
+                      </Link>
                     ) : (
                       <div
                         key={slot.id}
-                        className="w-full rounded-xl py-5 px-4 text-base font-medium bg-muted text-muted-foreground border border-border text-center"
+                        className="absolute left-1 right-1 rounded-lg p-2 text-xs bg-muted/60 text-muted-foreground flex flex-col justify-center overflow-hidden"
+                        style={{ 
+                          top: `${position.top}px`, 
+                          height: `${position.height}px`,
+                          minHeight: `${position.height}px`,
+                          maxHeight: `${position.height}px`
+                        }}
                       >
-                        {formatSlotTime(slot.start_time)} — {slot.duration_minutes} мин · Занято
+                        <div className="font-semibold truncate">{position.time}</div>
+                        <div className="text-xs opacity-70 truncate">Занято</div>
                       </div>
                     );
-                  })
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
       </div>
     </div>
   );

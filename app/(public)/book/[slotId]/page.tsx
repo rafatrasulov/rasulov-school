@@ -33,20 +33,25 @@ export default async function BookSlotPage({
   if (slot.status !== "free") notFound();
 
   return (
-    <main className="min-h-screen py-12 md:py-20">
-      <div className="container mx-auto max-w-xl px-4">
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8">
-          <h1 className="text-2xl font-bold text-foreground">
+    <main className="min-h-screen py-12 md:py-20 bg-gradient-to-b from-muted/20 to-background">
+      <div className="container mx-auto max-w-2xl px-6">
+        <div className="glass rounded-xl p-8 md:p-10 animate-slide-up">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground gradient-text">
             Запись на урок
           </h1>
-          <p className="mt-2 text-muted-foreground">
-            {formatSlotDateTime(slot.start_time)}, {slot.duration_minutes} мин
-          </p>
+          <div className="mt-4 glass-strong rounded-lg p-4">
+            <p className="text-lg text-muted-foreground">
+              {formatSlotDateTime(slot.start_time)}
+            </p>
+            <p className="text-sm text-primary font-medium mt-1">
+              Длительность: {slot.duration_minutes} минут
+            </p>
+          </div>
           <div className="mt-8">
             <BookingForm slotId={slotId} />
           </div>
           <div className="mt-6">
-            <Button asChild variant="ghost" size="sm" className="rounded-xl">
+            <Button asChild variant="ghost" size="default" className="rounded-lg hover:bg-primary/20">
               <Link href="/#calendar">← Выбрать другое время</Link>
             </Button>
           </div>

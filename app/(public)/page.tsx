@@ -64,33 +64,45 @@ export default async function HomePage() {
     return (
       <main className="min-h-screen">
         <Hero />
-        <div className="container mx-auto max-w-7xl px-4 py-6 md:py-10">
-          <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-12">
-            <div className="lg:col-span-5">
-              <AboutTeacher teacher={teacher as Profile | null} />
-            </div>
-            <div className="lg:col-span-7">
-              <Benefits />
-            </div>
-            <div className="lg:col-span-4">
-              <Stepper />
-            </div>
-            <div className="lg:col-span-8">
-              <SlotCalendarSection slots={slots ?? []} />
-            </div>
-            <div className="lg:col-span-12">
-              <FAQ />
+        <section className="w-full py-16 md:py-20 bg-gradient-to-b from-background via-muted/20 to-background">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-12 animate-slide-up">
+              <div className="lg:col-span-5">
+                <AboutTeacher teacher={teacher as Profile | null} />
+              </div>
+              <div className="lg:col-span-7">
+                <Benefits />
+              </div>
             </div>
           </div>
-        </div>
+        </section>
+        <section className="w-full py-16 md:py-20">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-12 animate-slide-up">
+              <div className="lg:col-span-4">
+                <Stepper />
+              </div>
+              <div className="lg:col-span-8">
+                <SlotCalendarSection slots={slots ?? []} />
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="w-full py-16 md:py-20 bg-gradient-to-b from-background to-muted/20">
+          <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+            <FAQ />
+          </div>
+        </section>
       </main>
     );
   }
 
   return (
     <main className="min-h-screen">
-      {visibleBlocks.map((block) => {
+      {visibleBlocks.map((block, index) => {
         const props = (block.props || {}) as Record<string, unknown>;
+        const isEven = index % 2 === 0;
+        
         switch (block.type) {
           case "hero":
             return (
@@ -103,52 +115,77 @@ export default async function HomePage() {
             );
           case "about_teacher":
             return (
-              <div key={block.id} className="container mx-auto max-w-7xl px-4 py-4 md:py-6">
-                <AboutTeacher
-                  teacher={teacher as Profile | null}
-                  title={(props.title as string) ?? "Об учителе"}
-                />
-              </div>
+              <section 
+                key={block.id} 
+                className={`w-full py-16 md:py-20 ${isEven ? 'bg-gradient-to-b from-background via-muted/20 to-background' : ''}`}
+              >
+                <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+                  <AboutTeacher
+                    teacher={teacher as Profile | null}
+                    title={(props.title as string) ?? "Об учителе"}
+                  />
+                </div>
+              </section>
             );
           case "benefits":
             return (
-              <div key={block.id} className="container mx-auto max-w-7xl px-4 py-4 md:py-6">
-                <Benefits
-                  title={props.title as string | undefined}
-                  description={props.description as string | undefined}
-                  items={props.items as Array<{ title?: string; description?: string }> | undefined}
-                />
-              </div>
+              <section 
+                key={block.id} 
+                className={`w-full py-16 md:py-20 ${isEven ? 'bg-gradient-to-b from-background via-muted/20 to-background' : ''}`}
+              >
+                <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+                  <Benefits
+                    title={props.title as string | undefined}
+                    description={props.description as string | undefined}
+                    items={props.items as Array<{ title?: string; description?: string }> | undefined}
+                  />
+                </div>
+              </section>
             );
           case "stepper":
             return (
-              <div key={block.id} className="container mx-auto max-w-7xl px-4 py-4 md:py-6">
-                <Stepper
-                  title={props.title as string | undefined}
-                  description={props.description as string | undefined}
-                  steps={props.steps as Array<{ title?: string; description?: string }> | undefined}
-                />
-              </div>
+              <section 
+                key={block.id} 
+                className={`w-full py-16 md:py-20 ${isEven ? 'bg-gradient-to-b from-background via-muted/20 to-background' : ''}`}
+              >
+                <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+                  <Stepper
+                    title={props.title as string | undefined}
+                    description={props.description as string | undefined}
+                    steps={props.steps as Array<{ title?: string; description?: string }> | undefined}
+                  />
+                </div>
+              </section>
             );
           case "calendar":
             return (
-              <div key={block.id} className="container mx-auto max-w-7xl px-4 py-4 md:py-6">
-                <SlotCalendarSection
-                  slots={slots ?? []}
-                  title={(props.title as string) ?? "Свободные слоты"}
-                  description={(props.description as string) ?? "Выберите удобное время и нажмите «Записаться»."}
-                />
-              </div>
+              <section 
+                key={block.id} 
+                className={`w-full py-16 md:py-20 ${isEven ? 'bg-gradient-to-b from-background via-muted/20 to-background' : ''}`}
+              >
+                <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+                  <SlotCalendarSection
+                    slots={slots ?? []}
+                    title={(props.title as string) ?? "Свободные слоты"}
+                    description={(props.description as string) ?? "Выберите удобное время и нажмите «Записаться»."}
+                  />
+                </div>
+              </section>
             );
           case "faq":
             return (
-              <div key={block.id} className="container mx-auto max-w-7xl px-4 py-4 md:py-6">
-                <FAQ
-                  title={props.title as string | undefined}
-                  description={props.description as string | undefined}
-                  items={props.items as Array<{ q?: string; a?: string }> | undefined}
-                />
-              </div>
+              <section 
+                key={block.id} 
+                className={`w-full py-16 md:py-20 ${isEven ? 'bg-gradient-to-b from-background to-muted/20' : ''}`}
+              >
+                <div className="max-w-7xl mx-auto px-6 animate-slide-up">
+                  <FAQ
+                    title={props.title as string | undefined}
+                    description={props.description as string | undefined}
+                    items={props.items as Array<{ q?: string; a?: string }> | undefined}
+                  />
+                </div>
+              </section>
             );
           default:
             return null;

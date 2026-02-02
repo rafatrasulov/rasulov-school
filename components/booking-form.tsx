@@ -47,7 +47,7 @@ export function BookingForm({ slotId }: BookingFormProps) {
   return (
     <form action={formAction} className="space-y-6">
       {state?.error?._form && (
-        <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
+        <div className="glass-strong rounded-lg p-4 text-sm text-destructive border border-destructive/30">
           {state.error._form.join(" ")}
         </div>
       )}
@@ -168,7 +168,7 @@ export function BookingForm({ slotId }: BookingFormProps) {
           )}
         </div>
       </div>
-      <Button type="submit" size="lg" className="w-full rounded-xl">
+      <Button type="submit" size="lg" className="w-full rounded-lg glass-strong hover:bg-primary hover:scale-105 transition-all duration-300 py-6 text-lg">
         Отправить заявку
       </Button>
     </form>

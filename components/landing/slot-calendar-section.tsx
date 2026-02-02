@@ -25,20 +25,22 @@ export function SlotCalendarSection({ slots, title, description }: SlotCalendarS
   const headerAction = (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="default" className="rounded-xl gap-2 shrink-0">
+        <Button variant="outline" size="default" className="rounded-lg gap-2 shrink-0 glass hover:bg-primary/20">
           <CalendarDays className="h-5 w-5" />
           Все слоты
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto sm:max-w-5xl">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto glass-strong">
         <DialogHeader>
-          <DialogTitle>{title ?? "Свободные слоты"}</DialogTitle>
+          <DialogTitle className="text-2xl">{title ?? "Свободные слоты"}</DialogTitle>
         </DialogHeader>
-        <SlotCalendar
-          slots={slots}
-          title=""
-          description=""
-        />
+        <div className="mt-4">
+          <SlotCalendar
+            slots={slots}
+            title=""
+            description=""
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );
