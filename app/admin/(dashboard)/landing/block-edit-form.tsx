@@ -39,10 +39,15 @@ export function BlockEditForm({
 
   if (!block) return null;
 
+  // ✅ Narrow once, then use stable locals everywhere (fixes "block is possibly null")
+  const blockId = block.id;
+  const blockType = block.type;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const result = await updateLandingBlock(block.id, { props });
+
+    const result = await updateLandingBlock(blockId, { props });
     if (result?.error) {
       setError(result.error);
       return;
@@ -50,19 +55,24 @@ export function BlockEditForm({
     onSaved();
   }
 
-  const set = (key: string, value: unknown) => setProps((p) => ({ ...p, [key]: value }));
+  const set = (key: string, value: unknown) =>
+    setProps((p) => ({ ...p, [key]: value }));
 
   return (
     <Dialog open={!!block} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="rounded-2xl sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Редактировать блок: {block.type}</DialogTitle>
+          <DialogTitle>Редактировать блок: {blockType}</DialogTitle>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           {error && (
-            <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+            <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </div>
           )}
-          {block.type === "hero" && (
+
+          {blockType === "hero" && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="title">Заголовок</Label>
@@ -73,6 +83,7 @@ export function BlockEditForm({
                   className="rounded-xl"
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="subtitle">Подзаголовок</Label>
                 <Input
@@ -82,6 +93,7 @@ export function BlockEditForm({
                   className="rounded-xl"
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="cta_text">Текст кнопки</Label>
                 <Input
@@ -93,7 +105,8 @@ export function BlockEditForm({
               </div>
             </>
           )}
-          {(block.type === "about_teacher" || block.type === "calendar") && (
+
+          {(blockType === "about_teacher" || blockType === "calendar") && (
             <div className="space-y-2">
               <Label htmlFor="title">Заголовок</Label>
               <Input
@@ -102,7 +115,8 @@ export function BlockEditForm({
                 onChange={(e) => set("title", e.target.value)}
                 className="rounded-xl"
               />
-              {block.type === "calendar" && (
+
+              {blockType === "calendar" && (
                 <div className="space-y-2 mt-2">
                   <Label htmlFor="description">Описание</Label>
                   <Input
@@ -115,7 +129,10 @@ export function BlockEditForm({
               )}
             </div>
           )}
-          {(block.type === "benefits" || block.type === "stepper" || block.type === "faq") && (
+
+          {(blockType === "benefits" ||
+            blockType === "stepper" ||
+            blockType === "faq") && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="title">Заголовок</Label>
@@ -126,6 +143,7 @@ export function BlockEditForm({
                   className="rounded-xl"
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="description">Описание (подзаголовок)</Label>
                 <Input
@@ -135,25 +153,29 @@ export function BlockEditForm({
                   className="rounded-xl"
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="items">
-                  {block.type === "benefits" && "Пункты (JSON: массив {title, description})"}
-                  {block.type === "stepper" && "Шаги (JSON: массив {title, description})"}
-                  {block.type === "faq" && "Вопросы (JSON: массив {q, a})"}
+                  {blockType === "benefits" &&
+                    "Пункты (JSON: массив {title, description})"}
+                  {blockType === "stepper" &&
+                    "Шаги (JSON: массив {title, description})"}
+                  {blockType === "faq" && "Вопросы (JSON: массив {q, a})"}
                 </Label>
+
                 <Textarea
                   id="items"
                   rows={10}
                   className="rounded-xl font-mono text-sm resize-y"
                   value={
-                    block.type === "stepper"
+                    blockType === "stepper"
                       ? JSON.stringify((props.steps as unknown[]) ?? [], null, 2)
                       : JSON.stringify((props.items as unknown[]) ?? [], null, 2)
                   }
                   onChange={(e) => {
                     try {
                       const arr = JSON.parse(e.target.value || "[]");
-                      if (block.type === "stepper") set("steps", arr);
+                      if (blockType === "stepper") set("steps", arr);
                       else set("items", arr);
                     } catch {
                       // ignore invalid json while typing
@@ -163,9 +185,17 @@ export function BlockEditForm({
               </div>
             </>
           )}
+
           <div className="flex gap-2 pt-2">
-            <Button type="submit" className="rounded-xl">Сохранить</Button>
-            <Button type="button" variant="outline" className="rounded-xl" onClick={onClose}>
+            <Button type="submit" className="rounded-xl">
+              Сохранить
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl"
+              onClick={onClose}
+            >
               Отмена
             </Button>
           </div>
