@@ -102,7 +102,7 @@ export function AssignmentsList({
     setError(null);
     formData.set("type", type);
     const result = await updateAssignment(editing.id, topicId, sectionId, formData);
-    if (result && 'error' in result) setError(result.error);
+    if (result && 'error' in result) setError(result.error || null);
     else {
       setEditing(null);
       router.refresh();
@@ -112,7 +112,7 @@ export function AssignmentsList({
   async function handleDelete(id: string) {
     if (!confirm("Удалить задание?")) return;
     const result = await deleteAssignment(id, topicId, sectionId);
-    if (result && 'error' in result) setError(result.error);
+    if (result && 'error' in result) setError(result.error || null);
     else router.refresh();
   }
 
