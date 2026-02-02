@@ -39,9 +39,13 @@ function formatDayHeader(date: Date): string {
 
 interface SlotCalendarProps {
   slots: Slot[];
+  title?: string;
+  description?: string;
+  /** Optional action (e.g. "Все слоты" button) rendered next to the title */
+  headerAction?: React.ReactNode;
 }
 
-export function SlotCalendar({ slots }: SlotCalendarProps) {
+export function SlotCalendar({ slots, title = "Свободные слоты", description = "Выберите удобное время и нажмите «Записаться».", headerAction }: SlotCalendarProps) {
   const today = useMemo(() => getWeekStart(new Date()), []);
   const [weekOffset, setWeekOffset] = useState(0);
 
@@ -86,81 +90,102 @@ export function SlotCalendar({ slots }: SlotCalendarProps) {
   const canGoNext = weekOffset < 2;
 
   return (
-    <section id="calendar" className="py-16 md:py-24 bg-muted/30 scroll-mt-20">
-      <div className="container mx-auto max-w-5xl px-4">
-        <h2 className="text-3xl font-bold text-center text-foreground md:text-4xl">
-          Свободные слоты
-        </h2>
-        <p className="mt-4 text-center text-muted-foreground">
-          Выберите удобное время и нажмите «Записаться».
-        </p>
-
-        <div className="mt-10 flex items-center justify-center gap-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setWeekOffset((o) => o - 1)}
-            disabled={!canGoPrev}
-            aria-label="Предыдущая неделя"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="min-w-[200px] text-center font-medium text-foreground">
-            Неделя {weekStart.getDate()}.{weekStart.getMonth() + 1} —{" "}
-            {weekDays[6].getDate()}.{weekDays[6].getMonth() + 1}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setWeekOffset((o) => o + 1)}
-            disabled={!canGoNext}
-            aria-label="Следующая неделя"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+    <div id="calendar" className="rounded-3xl border-2 border-primary/10 bg-card p-6 shadow-sm scroll-mt-20">
+      {(title || description || headerAction) ? (
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            {title ? (
+              <h2 className="text-2xl font-bold text-foreground md:text-3xl">
+                {title}
+              </h2>
+            ) : null}
+            {description ? (
+              <p className="mt-2 text-muted-foreground">
+                {description}
+              </p>
+            ) : null}
+          </div>
+          {headerAction}
         </div>
+      ) : null}
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-          {weekDays.map((day) => {
-            const key = formatDateKey(day);
-            const daySlots = slotsByDay[key] ?? [];
-            return (
-              <Card
-                key={key}
-                className="rounded-2xl border-border/50 shadow-sm bg-card"
-              >
-                <CardHeader className="pb-2">
-                  <div className="text-sm font-medium text-muted-foreground">
-                    {DAY_NAMES[day.getDay() === 0 ? 6 : day.getDay() - 1]}
-                  </div>
-                  <div className="text-lg font-semibold text-foreground">
-                    {formatDayHeader(day)}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {daySlots.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Нет слотов</p>
-                  ) : (
-                    daySlots.map((slot) => (
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-11 w-11 rounded-xl"
+          onClick={() => setWeekOffset((o) => o - 1)}
+          disabled={!canGoPrev}
+          aria-label="Предыдущая неделя"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
+        <span className="min-w-[200px] text-center font-medium text-foreground text-base md:text-lg">
+          Неделя {weekStart.getDate()}.{weekStart.getMonth() + 1} —{" "}
+          {weekDays[6].getDate()}.{weekDays[6].getMonth() + 1}
+        </span>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-11 w-11 rounded-xl"
+          onClick={() => setWeekOffset((o) => o + 1)}
+          disabled={!canGoNext}
+          aria-label="Следующая неделя"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </Button>
+      </div>
+
+      <div className="mt-6 grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7">
+        {weekDays.map((day) => {
+          const key = formatDateKey(day);
+          const daySlots = slotsByDay[key] ?? [];
+          return (
+            <Card
+              key={key}
+              className="rounded-2xl border-border/50 shadow-sm bg-muted/30 p-4 md:p-5"
+            >
+              <CardHeader className="p-0 pb-3">
+                <div className="text-sm font-medium text-muted-foreground">
+                  {DAY_NAMES[day.getDay() === 0 ? 6 : day.getDay() - 1]}
+                </div>
+                <div className="text-xl font-semibold text-foreground">
+                  {formatDayHeader(day)}
+                </div>
+              </CardHeader>
+              <CardContent className="p-0 space-y-3">
+                {daySlots.length === 0 ? (
+                  <p className="text-muted-foreground py-2 text-sm">Нет слотов</p>
+                ) : (
+                  daySlots.map((slot) => {
+                    const isFree = slot.status === "free";
+                    if (slot.status === "cancelled") return null;
+                    return isFree ? (
                       <Button
                         key={slot.id}
                         asChild
-                        variant="outline"
-                        size="sm"
-                        className="w-full rounded-xl"
+                        size="default"
+                        className="w-full rounded-xl py-5 text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <Link href={`/book/${slot.id}`}>
                           {formatSlotTime(slot.start_time)} — {slot.duration_minutes} мин
                         </Link>
                       </Button>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                    ) : (
+                      <div
+                        key={slot.id}
+                        className="w-full rounded-xl py-5 px-4 text-base font-medium bg-muted text-muted-foreground border border-border text-center"
+                      >
+                        {formatSlotTime(slot.start_time)} — {slot.duration_minutes} мин · Занято
+                      </div>
+                    );
+                  })
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
-    </section>
+    </div>
   );
 }

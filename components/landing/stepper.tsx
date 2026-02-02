@@ -1,58 +1,40 @@
-const steps = [
-  {
-    step: 1,
-    title: "Выберите время",
-    description: "Посмотрите свободные слоты в календаре и нажмите «Записаться» у удобного времени.",
-  },
-  {
-    step: 2,
-    title: "Заполните анкету",
-    description: "Укажите имя, контакты и цель занятий — так я смогу подготовиться к первому уроку.",
-  },
-  {
-    step: 3,
-    title: "Подтверждение",
-    description: "Я свяжусь с вами в выбранном мессенджере и подтвержу запись.",
-  },
-  {
-    step: 4,
-    title: "Урок онлайн",
-    description: "Встречаемся в Zoom или другом удобном формате. Длительность — по вашему слоту.",
-  },
+const DEFAULT_STEPS = [
+  { title: "Выберите время", description: "Свободные слоты в календаре — нажмите «Записаться»." },
+  { title: "Заполните анкету", description: "Имя, контакты и цель занятий." },
+  { title: "Подтверждение", description: "Свяжусь в мессенджере и подтвержу запись." },
+  { title: "Урок онлайн", description: "Zoom или другой формат. Длительность — по слоту." },
 ];
 
-export function Stepper() {
+type StepperProps = {
+  title?: string;
+  description?: string;
+  steps?: Array<{ title?: string; description?: string }>;
+};
+
+export function Stepper(props?: StepperProps | null) {
+  const title = props?.title ?? "Как проходит урок";
+  const description = props?.description ?? "Четыре простых шага.";
+  const steps = Array.isArray(props?.steps) && props.steps.length > 0 ? props.steps : DEFAULT_STEPS;
   return (
-    <section className="py-16 md:py-24">
-      <div className="container mx-auto max-w-3xl px-4">
-        <h2 className="text-3xl font-bold text-center text-foreground md:text-4xl">
-          Как проходит урок
-        </h2>
-        <p className="mt-4 text-center text-muted-foreground">
-          От записи до занятия — четыре простых шага.
-        </p>
-        <div className="mt-12 space-y-8">
-          {steps.map((item, index) => (
-            <div key={item.step} className="relative flex gap-6">
-              {index < steps.length - 1 && (
-                <div
-                  className="absolute left-5 top-12 bottom-0 w-px -mb-8 bg-border"
-                  aria-hidden
-                />
-              )}
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background text-sm font-semibold text-primary">
-                {item.step}
-              </div>
-              <div className="pb-8">
-                <h3 className="text-lg font-semibold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="mt-1 text-muted-foreground">{item.description}</p>
-              </div>
+    <div className="rounded-3xl border-2 border-primary/10 bg-card p-6 shadow-sm h-full">
+      <h2 className="text-2xl font-bold text-foreground md:text-3xl">{title}</h2>
+      <p className="mt-2 text-muted-foreground">{description}</p>
+      <div className="mt-8 space-y-6">
+        {steps.map((item, index) => (
+          <div key={index} className="relative flex gap-4">
+            {index < steps.length - 1 && (
+              <div className="absolute left-4 top-10 bottom-0 w-px -mb-6 bg-border" aria-hidden />
+            )}
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary/10 text-sm font-semibold text-primary">
+              {index + 1}
             </div>
-          ))}
-        </div>
+            <div>
+              <h3 className="font-semibold text-foreground">{item.title ?? ""}</h3>
+              <p className="mt-0.5 text-sm text-muted-foreground">{item.description ?? ""}</p>
+            </div>
+          </div>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }

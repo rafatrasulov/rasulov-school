@@ -13,8 +13,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "RASULOV-SCHOOL — Математика с репетитором",
-  description: "Авторская онлайн-школа математики. Индивидуальные уроки с Рафатом Расуловым.",
+  title: "RasulovSchool — Репетитор по математике Расулов Рафат Абульфатович",
+  description: "Онлайн-школа математики RasulovSchool. Индивидуальные уроки с репетитором Расуловым Рафатом Абульфатовичем.",
 };
 
 export default function RootLayout({

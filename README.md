@@ -77,6 +77,12 @@ Supabase — это сервис, где хранятся пользовател
 
 **Итог:** в базе появились таблицы `profiles`, `slots`, `bookings` и функция для записи на урок. Ошибки вроде «relation already exists» могут значить, что ты уже запускал этот скрипт раньше — тогда можно не переживать.
 
+**Дополнительные миграции (разделы, диагностика, профили, классы, лендинг):** после `schema.sql` выполни по очереди в SQL Editor файлы из папки `db/migrations/`: `002_handle_new_user.sql`, `003_sections_topics_lessons_assignments.sql`, `004_diagnostic.sql`, `005_profiles_sections_grade_avatars.sql`, `007_landing_blocks.sql`.
+
+**Хранилище для фото (аватар учителя и ученика):** в Supabase открой **Storage** → **New bucket** → имя `avatars`, включи **Public**. Затем в **SQL Editor** выполни файл `db/migrations/006_storage_avatars_rls.sql` — так появятся политики RLS, разрешающие залогиненным пользователям загружать фото только в свою папку (`{user_id}/avatar`). Без этого шага при загрузке аватара будет ошибка «new row violates row-level security policy».
+
+**Хранилище для фото заданий:** в Supabase открой **Storage** → **New bucket** → имя `assignment-images`, включи **Public**. Затем в **SQL Editor** выполни файл `db/migrations/008_storage_assignment_images_rls.sql` — политики RLS разрешат только учителям загружать изображения заданий. Без этого шага загрузка фото к заданию в админке может завершиться ошибкой RLS.
+
 ---
 
 ## Шаг 1.4. Создать пользователя «учитель» и дать ему роль
@@ -187,8 +193,8 @@ ON CONFLICT (id) DO UPDATE SET role = 'teacher';
 ## Шаг 2.4. Запустить сайт на своём компьютере
 
 1. В терминале (всё в той же папке `onlineschool`) введи:
-   ```bash
-   npm run dev
+```bash
+npm run dev
    ```
 2. Нажми Enter. Появится текст вроде «Ready on http://localhost:3000».
 3. Открой браузер и перейди по адресу: **http://localhost:3000**

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { Calendar, FileText, LogOut } from "lucide-react";
+import { BookOpen, Calendar, ClipboardList, FileText, Home, LogOut, User } from "lucide-react";
 import { logout } from "../actions";
 
 export default async function AdminDashboardLayout({
@@ -17,36 +17,69 @@ export default async function AdminDashboardLayout({
     redirect("/admin/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, { data: firstTeacher }] = await Promise.all([
+    supabase.from("profiles").select("role").eq("id", user.id).single(),
+    supabase.from("profiles").select("id").eq("role", "teacher").order("created_at", { ascending: true }).limit(1).maybeSingle(),
+  ]);
 
   if (profile?.role !== "teacher") {
     redirect("/admin/login");
   }
 
+  const isFirstTeacher = firstTeacher?.id === user.id;
+
+  const navBtn = "w-full justify-start gap-3 rounded-xl text-base hover:bg-primary/10 hover:text-primary";
+  const iconClass = "h-5 w-5 shrink-0";
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      <aside className="w-full md:w-56 border-b md:border-b-0 md:border-r border-border bg-card p-4">
-        <nav className="flex flex-row md:flex-col gap-2">
+      <aside className="w-full md:w-72 border-b md:border-b-0 md:border-r border-border bg-muted/30 md:bg-card p-5">
+        <nav className="flex flex-row md:flex-col gap-1">
+          <span className="hidden md:block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Контент</span>
+          {isFirstTeacher && (
+            <Link href="/admin/landing">
+              <Button variant="ghost" className={navBtn} size="default">
+                <Home className={iconClass} />
+                Главная
+              </Button>
+            </Link>
+          )}
+          <Link href="/admin/sections">
+            <Button variant="ghost" className={navBtn} size="default">
+              <BookOpen className={iconClass} />
+              Разделы
+            </Button>
+          </Link>
+          <Link href="/admin/diagnostic">
+            <Button variant="ghost" className={navBtn} size="default">
+              <ClipboardList className={iconClass} />
+              Диагностика
+            </Button>
+          </Link>
+          <span className="hidden md:block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-2">Запись</span>
           <Link href="/admin/slots">
-            <Button variant="ghost" className="w-full justify-start gap-2 rounded-xl" size="sm">
-              <Calendar className="h-4 w-4" />
+            <Button variant="ghost" className={navBtn} size="default">
+              <Calendar className={iconClass} />
               Слоты
             </Button>
           </Link>
           <Link href="/admin/bookings">
-            <Button variant="ghost" className="w-full justify-start gap-2 rounded-xl" size="sm">
-              <FileText className="h-4 w-4" />
+            <Button variant="ghost" className={navBtn} size="default">
+              <FileText className={iconClass} />
               Заявки
+            </Button>
+          </Link>
+          <span className="hidden md:block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-2">Аккаунт</span>
+          <Link href="/admin/profile">
+            <Button variant="ghost" className={navBtn} size="default">
+              <User className={iconClass} />
+              Профиль
             </Button>
           </Link>
           <div className="flex-1" />
           <form action={logout}>
-            <Button type="submit" variant="ghost" className="w-full justify-start gap-2 rounded-xl text-muted-foreground" size="sm">
-              <LogOut className="h-4 w-4" />
+            <Button type="submit" variant="ghost" className={`${navBtn} text-muted-foreground`} size="default">
+              <LogOut className={iconClass} />
               Выход
             </Button>
           </form>
