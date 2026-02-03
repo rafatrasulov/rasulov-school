@@ -32,7 +32,8 @@ export default function StudentRegisterPage() {
         { 
           id: data.user.id, 
           role: "student",
-          full_name: fullName || null
+          full_name: fullName || null,
+          email: data.user.email || null
         },
         { onConflict: "id" }
       );
