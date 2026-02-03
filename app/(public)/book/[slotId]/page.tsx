@@ -55,6 +55,14 @@ export default async function BookSlotPage({
     }
   }
 
+  // Fetch topics for authenticated users
+  const { data: topics } = await supabase
+    .from("topics")
+    .select("id, title, section_id, sections!inner(title)")
+    .eq("published", true)
+    .order("section_id")
+    .order("order");
+
   return (
     <main className="min-h-screen py-12 md:py-20 bg-gradient-to-b from-secondary/20 to-white relative overflow-hidden">
       <div className="absolute inset-0" style={{backgroundImage: 'radial-gradient(rgba(13,148,136,0.06) 1px, transparent 1px)', backgroundSize: '24px 24px'}} aria-hidden />
@@ -73,7 +81,7 @@ export default async function BookSlotPage({
             </p>
           </div>
           <div className="mt-8">
-            <BookingForm slotId={slotId} profile={profile} />
+            <BookingForm slotId={slotId} profile={profile} topics={topics ?? []} />
           </div>
           <div className="mt-6">
             <Button asChild variant="ghost" size="default" className="rounded-lg hover:bg-primary/20">

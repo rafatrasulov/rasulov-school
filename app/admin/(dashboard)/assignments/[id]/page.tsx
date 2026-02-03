@@ -37,6 +37,7 @@ export default async function AdminAssignmentSubmissionsPage({
       answer,
       answer_json,
       score,
+      teacher_feedback,
       created_at,
       updated_at,
       profiles!assignment_submissions_user_id_fkey(full_name, email)

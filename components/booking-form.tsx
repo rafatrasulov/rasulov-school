@@ -27,23 +27,37 @@ const messengerLabels: Record<string, string> = {
   email: "Email",
 };
 
+interface Topic {
+  id: string;
+  title: string;
+  section_id: string;
+  sections: { title: string } | { title: string }[];
+}
+
 interface BookingFormProps {
   slotId: string;
   profile?: { full_name: string; email: string; grade: number | null } | null;
+  topics: Topic[];
 }
 
-export function BookingForm({ slotId, profile }: BookingFormProps) {
+export function BookingForm({ slotId, profile, topics }: BookingFormProps) {
   const [experienceLevel, setExperienceLevel] = useState("beginner");
   const [preferredMessenger, setPreferredMessenger] = useState("telegram");
+  const [selectedTopic, setSelectedTopic] = useState("");
   const [state, formAction] = useActionState(
     async (_prev: { error?: Record<string, string[] | undefined> }, formData: FormData) => {
-      formData.set("experience_level", experienceLevel);
-      formData.set("preferred_messenger", preferredMessenger);
-      
-      if (profile) {
+      if (!profile) {
+        formData.set("experience_level", experienceLevel);
+        formData.set("preferred_messenger", preferredMessenger);
+      } else {
         formData.set("full_name", profile.full_name || "Ученик");
         formData.set("email", profile.email);
         formData.set("phone", "не указан");
+        formData.set("experience_level", "intermediate");
+        formData.set("preferred_messenger", "telegram");
+        if (selectedTopic) {
+          formData.set("topic_id", selectedTopic);
+        }
       }
       
       const result = await submitBooking(slotId, formData);
@@ -128,60 +142,102 @@ export function BookingForm({ slotId, profile }: BookingFormProps) {
           </div>
         </>
       )}
-      <div className="space-y-2">
-        <Label htmlFor="goal">Цель занятий *</Label>
-        <Textarea
-          id="goal"
-          name="goal"
-          required
-          placeholder="Подготовка к ОГЭ, подтянуть алгебру, олимпиады..."
-          rows={4}
-          className="rounded-xl resize-none"
-        />
-        {state?.error?.goal && (
-          <p className="text-sm text-destructive">{state.error.goal[0]}</p>
-        )}
-      </div>
-      <div className="space-y-2">
-        <Label>Уровень *</Label>
-        <Select name="experience_level" value={experienceLevel} onValueChange={setExperienceLevel} required>
-          <SelectTrigger className="w-full rounded-xl">
-            <SelectValue placeholder="Выберите уровень" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(experienceLabels).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {state?.error?.experience_level && (
-          <p className="text-sm text-destructive">
-            {state.error.experience_level[0]}
-          </p>
-        )}
-      </div>
-      <div className="space-y-2">
-        <Label>Удобный способ связи *</Label>
-        <Select name="preferred_messenger" value={preferredMessenger} onValueChange={setPreferredMessenger} required>
-          <SelectTrigger className="w-full rounded-xl">
-            <SelectValue placeholder="Выберите мессенджер" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(messengerLabels).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {state?.error?.preferred_messenger && (
-          <p className="text-sm text-destructive">
-            {state.error.preferred_messenger[0]}
-          </p>
-        )}
-      </div>
+      
+      {profile ? (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="topic_id">Тема урока (необязательно)</Label>
+            <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+              <SelectTrigger className="w-full rounded-xl">
+                <SelectValue placeholder="Выберите тему или оставьте пустым" />
+              </SelectTrigger>
+              <SelectContent>
+                {topics.map((topic) => {
+                  const sectionTitle = Array.isArray(topic.sections) 
+                    ? topic.sections[0]?.title 
+                    : topic.sections.title;
+                  return (
+                    <SelectItem key={topic.id} value={topic.id}>
+                      {sectionTitle}: {topic.title}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="details">Что именно непонятно? *</Label>
+            <Textarea
+              id="details"
+              name="details"
+              required
+              placeholder="Опишите, с какими конкретными задачами или темами нужна помощь..."
+              rows={4}
+              className="rounded-xl resize-none"
+            />
+            {state?.error?.details && (
+              <p className="text-sm text-destructive">{state.error.details[0]}</p>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="goal">Цель занятий *</Label>
+            <Textarea
+              id="goal"
+              name="goal"
+              required
+              placeholder="Подготовка к ОГЭ, подтянуть алгебру, олимпиады..."
+              rows={4}
+              className="rounded-xl resize-none"
+            />
+            {state?.error?.goal && (
+              <p className="text-sm text-destructive">{state.error.goal[0]}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label>Уровень *</Label>
+            <Select name="experience_level" value={experienceLevel} onValueChange={setExperienceLevel} required>
+              <SelectTrigger className="w-full rounded-xl">
+                <SelectValue placeholder="Выберите уровень" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(experienceLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {state?.error?.experience_level && (
+              <p className="text-sm text-destructive">
+                {state.error.experience_level[0]}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label>Удобный способ связи *</Label>
+            <Select name="preferred_messenger" value={preferredMessenger} onValueChange={setPreferredMessenger} required>
+              <SelectTrigger className="w-full rounded-xl">
+                <SelectValue placeholder="Выберите мессенджер" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(messengerLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {state?.error?.preferred_messenger && (
+              <p className="text-sm text-destructive">
+                {state.error.preferred_messenger[0]}
+              </p>
+            )}
+          </div>
+        </>
+      )}
       <div className="flex items-start gap-3">
         <Checkbox id="consent" name="consent" required aria-describedby="consent-desc" />
         <div className="space-y-1">

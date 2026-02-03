@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function AdminStudentsPage() {
@@ -35,6 +37,7 @@ export default async function AdminStudentsPage() {
                     <th className="text-left p-4 font-medium">Email</th>
                     <th className="text-left p-4 font-medium">Класс</th>
                     <th className="text-left p-4 font-medium">Дата регистрации</th>
+                    <th className="text-right p-4 font-medium">Действия</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -51,6 +54,13 @@ export default async function AdminStudentsPage() {
                       </td>
                       <td className="p-4 text-muted-foreground">
                         {new Date(student.created_at).toLocaleDateString("ru-RU")}
+                      </td>
+                      <td className="p-4 text-right">
+                        <Button asChild variant="ghost" size="sm" className="rounded-lg">
+                          <Link href={`/admin/students/${student.id}`}>
+                            Просмотр
+                          </Link>
+                        </Button>
                       </td>
                     </tr>
                   ))}

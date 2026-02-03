@@ -4,8 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { AssignmentForm } from "./assignment-form";
 import { ContentWithMath } from "@/components/content-with-math";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ChevronLeft } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronLeft, CheckCircle2, XCircle } from "lucide-react";
 
 export default async function AssignmentPage({
   params,
@@ -29,6 +29,19 @@ export default async function AssignmentPage({
     .select("id, title, section_id")
     .eq("id", assignment.topic_id)
     .single();
+
+  // Fetch submission for current user
+  const { data: { user } } = await supabase.auth.getUser();
+  let submission = null;
+  if (user) {
+    const { data } = await supabase
+      .from("assignment_submissions")
+      .select("id, answer, score, teacher_feedback, created_at, updated_at")
+      .eq("assignment_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    submission = data;
+  }
 
   return (
     <div className="container mx-auto max-w-3xl">
@@ -55,6 +68,55 @@ export default async function AssignmentPage({
           <AssignmentForm assignmentId={assignment.id} type={assignment.type} options={assignment.options} />
         </CardContent>
       </Card>
+
+      {submission && (
+        <Card className="mt-6 rounded-2xl border-primary/30 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {submission.score !== null && submission.score >= 50 ? (
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+              ) : submission.score !== null ? (
+                <XCircle className="h-5 w-5 text-destructive" />
+              ) : null}
+              Результат проверки
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {submission.score !== null && (
+              <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                <span className="text-sm font-medium">Оценка:</span>
+                <span className="text-2xl font-bold text-primary">
+                  {submission.score}
+                </span>
+              </div>
+            )}
+
+            {submission.score === null && (
+              <div className="p-4 rounded-xl bg-muted/50 text-muted-foreground">
+                Ваш ответ отправлен на проверку учителю.
+              </div>
+            )}
+
+            {submission.teacher_feedback && (
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <p className="text-sm font-medium mb-2 text-primary">
+                  Комментарий учителя:
+                </p>
+                <p className="whitespace-pre-wrap text-foreground">
+                  {submission.teacher_feedback}
+                </p>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>Отправлено: {new Date(submission.created_at).toLocaleString("ru-RU")}</span>
+              {submission.updated_at !== submission.created_at && (
+                <span>Проверено: {new Date(submission.updated_at).toLocaleString("ru-RU")}</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

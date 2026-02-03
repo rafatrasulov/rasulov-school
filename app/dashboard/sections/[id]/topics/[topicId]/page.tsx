@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, FileQuestion, Play } from "lucide-react";
 
 export default async function TopicPage({
@@ -36,6 +37,25 @@ export default async function TopicPage({
     .eq("topic_id", topicId)
     .eq("published", true)
     .order("order", { ascending: true });
+
+  // Fetch submissions for current user
+  const { data: { user } } = await supabase.auth.getUser();
+  const submissionsMap = new Map<string, { score: number | null }>();
+  
+  if (user && assignments && assignments.length > 0) {
+    const assignmentIds = assignments.map(a => a.id);
+    const { data: submissions } = await supabase
+      .from("assignment_submissions")
+      .select("assignment_id, score")
+      .eq("user_id", user.id)
+      .in("assignment_id", assignmentIds);
+    
+    if (submissions) {
+      submissions.forEach(sub => {
+        submissionsMap.set(sub.assignment_id, { score: sub.score });
+      });
+    }
+  }
 
   return (
     <div className="container mx-auto max-w-6xl">
@@ -87,18 +107,39 @@ export default async function TopicPage({
         <section className="mt-10">
           <h2 className="text-lg font-semibold text-foreground mb-4">Задания</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            {(assignments ?? []).map((a) => (
-              <Card key={a.id} className="rounded-2xl border-border/50 shadow-sm">
-                <CardContent className="p-4">
-                  <Button asChild variant="outline" className="w-full justify-start gap-2 rounded-xl" size="default">
-                    <Link href={`/dashboard/assignments/${a.id}`}>
-                      <FileQuestion className="h-4 w-4 shrink-0" />
-                      {a.title}
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+            {(assignments ?? []).map((a) => {
+              const submission = submissionsMap.get(a.id);
+              return (
+                <Card key={a.id} className="rounded-2xl border-border/50 shadow-sm">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-sm">{a.title}</span>
+                      {submission ? (
+                        submission.score !== null ? (
+                          <Badge variant="success" className="shrink-0">
+                            Оценено: {submission.score}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="shrink-0">
+                            Выполнено
+                          </Badge>
+                        )
+                      ) : (
+                        <Badge variant="outline" className="shrink-0">
+                          Не выполнено
+                        </Badge>
+                      )}
+                    </div>
+                    <Button asChild variant="outline" className="w-full justify-start gap-2 rounded-xl" size="sm">
+                      <Link href={`/dashboard/assignments/${a.id}`}>
+                        <FileQuestion className="h-4 w-4 shrink-0" />
+                        Открыть задание
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </section>
       )}

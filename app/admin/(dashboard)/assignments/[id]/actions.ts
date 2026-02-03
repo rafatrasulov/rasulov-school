@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 
 export async function updateSubmissionScore(
   submissionId: string,
-  score: number
+  score: number,
+  feedback: string | null
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
 
@@ -24,7 +25,10 @@ export async function updateSubmissionScore(
 
   const { error } = await supabase
     .from("assignment_submissions")
-    .update({ score })
+    .update({ 
+      score,
+      teacher_feedback: feedback 
+    })
     .eq("id", submissionId);
 
   if (error) return { error: error.message };

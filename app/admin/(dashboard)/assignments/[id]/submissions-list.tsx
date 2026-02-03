@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ interface SubmissionRow {
   answer: string | null;
   answer_json: unknown;
   score: number | null;
+  teacher_feedback: string | null;
   created_at: string;
   updated_at: string;
   profiles: {
@@ -42,6 +44,7 @@ export function SubmissionsList({
 }: SubmissionsListProps) {
   const [detail, setDetail] = useState<SubmissionRow | null>(null);
   const [score, setScore] = useState("");
+  const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -58,7 +61,7 @@ export function SubmissionsList({
       return;
     }
 
-    const result = await updateSubmissionScore(detail.id, scoreNum);
+    const result = await updateSubmissionScore(detail.id, scoreNum, feedback || null);
     setLoading(false);
 
     if (result.error) {
@@ -68,6 +71,7 @@ export function SubmissionsList({
 
     setDetail(null);
     setScore("");
+    setFeedback("");
     router.refresh();
   }
 
@@ -155,6 +159,7 @@ export function SubmissionsList({
                       onClick={() => {
                         setDetail(s);
                         setScore(s.score?.toString() ?? "");
+                        setFeedback(s.teacher_feedback ?? "");
                         setError(null);
                       }}
                     >
@@ -216,6 +221,18 @@ export function SubmissionsList({
                   onChange={(e) => setScore(e.target.value)}
                   placeholder="0-100"
                   className="rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="feedback">Комментарий ученику</Label>
+                <Textarea
+                  id="feedback"
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                  placeholder="Объяснение ошибок, рекомендации..."
+                  rows={4}
+                  className="rounded-xl resize-none"
                 />
               </div>
 
