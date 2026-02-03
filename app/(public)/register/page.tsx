@@ -29,7 +29,11 @@ export default function StudentRegisterPage() {
     }
     if (data.user) {
       await supabase.from("profiles").upsert(
-        { id: data.user.id, role: "student" },
+        { 
+          id: data.user.id, 
+          role: "student",
+          full_name: fullName || null
+        },
         { onConflict: "id" }
       );
     }

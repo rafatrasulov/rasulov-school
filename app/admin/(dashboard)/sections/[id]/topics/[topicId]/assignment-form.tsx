@@ -47,6 +47,7 @@ export function AssignmentForm({
   const [error, setError] = useState<string | null>(null);
   const [type, setType] = useState<string>("text");
   const [options, setOptions] = useState<OptionItem[]>([{ label: "", value: "" }]);
+  const [correctAnswer, setCorrectAnswer] = useState<string>("");
   const router = useRouter();
 
   const showOptions = type === "single_choice" || type === "multiple_choice";
@@ -76,12 +77,14 @@ export function AssignmentForm({
         .filter((o) => o.label.trim())
         .map((o) => ({ label: o.label.trim(), value: (o.value || o.label).trim().replace(/\s+/g, "_") || "v" }));
       formData.set("options", JSON.stringify(opts));
+      formData.set("correct_answer", correctAnswer);
     }
     const result = await createAssignment(topicId, sectionId, formData);
     if (result?.error) setError(result.error);
     else {
       setOpen(false);
       setOptions([{ label: "", value: "" }]);
+      setCorrectAnswer("");
       router.refresh();
     }
   }
@@ -127,10 +130,36 @@ export function AssignmentForm({
             <Input id="image_file" name="image_file" type="file" accept="image/*" className="rounded-xl" />
             <p className="text-xs text-muted-foreground">Если загрузите фото, оно будет использовано вместо ссылки.</p>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="correct_answer">Правильный ответ (для проверки)</Label>
-            <Input id="correct_answer" name="correct_answer" className="rounded-xl" placeholder="Для дробей: 1/2 или 0.5" />
-          </div>
+          {showOptions ? (
+            <div className="space-y-2">
+              <Label htmlFor="correct_answer_select">Правильный ответ *</Label>
+              <Select value={correctAnswer} onValueChange={setCorrectAnswer} required>
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder="Выберите правильный ответ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options
+                    .filter(opt => opt.label.trim())
+                    .map((opt, i) => {
+                      const value = (opt.value || opt.label).trim().replace(/\s+/g, "_") || "v";
+                      return (
+                        <SelectItem key={i} value={value}>
+                          {opt.label}
+                        </SelectItem>
+                      );
+                    })}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Выберите правильный вариант из списка выше.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="correct_answer">Правильный ответ (для проверки)</Label>
+              <Input id="correct_answer" name="correct_answer" className="rounded-xl" placeholder="Для дробей: 1/2 или 0.5" />
+            </div>
+          )}
           {showOptions && (
             <div className="space-y-2">
               <Label>Варианты ответа</Label>

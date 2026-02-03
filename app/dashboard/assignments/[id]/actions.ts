@@ -11,7 +11,8 @@ function normalizeAnswer(str: string | null): string {
 function checkAnswer(
   userAnswer: string | null,
   correctAnswer: string | null,
-  type: AssignmentType
+  type: AssignmentType,
+  options: unknown
 ): number | null {
   if (!correctAnswer) return null;
 
@@ -20,13 +21,34 @@ function checkAnswer(
 
   if (!userNorm) return 0;
 
-  // Для single_choice, multiple_choice, text, fraction - точное совпадение
-  if (
-    type === "single_choice" ||
-    type === "multiple_choice" ||
-    type === "text" ||
-    type === "fraction"
-  ) {
+  // Для single_choice и multiple_choice: проверяем соответствие value ИЛИ label
+  if (type === "single_choice" || type === "multiple_choice") {
+    const opts = Array.isArray(options) ? options : [];
+    
+    // Проверяем прямое совпадение
+    if (userNorm === correctNorm) return 100;
+    
+    // Ищем вариант, у которого value = userAnswer
+    const selectedOption = opts.find((opt: any) => {
+      const optValue = normalizeAnswer(opt.value ?? opt.label);
+      return optValue === userNorm;
+    });
+    
+    if (selectedOption) {
+      const optLabel = normalizeAnswer(selectedOption.label);
+      const optValue = normalizeAnswer(selectedOption.value ?? selectedOption.label);
+      
+      // Проверяем, совпадает ли correct_answer с label или value
+      if (correctNorm === optLabel || correctNorm === optValue) {
+        return 100;
+      }
+    }
+    
+    return 0;
+  }
+
+  // Для text, fraction - точное совпадение
+  if (type === "text" || type === "fraction") {
     return userNorm === correctNorm ? 100 : 0;
   }
 
@@ -49,13 +71,13 @@ export async function submitAssignment(
   // Получаем правильный ответ из БД
   const { data: assignment } = await supabase
     .from("assignments")
-    .select("correct_answer")
+    .select("correct_answer, options")
     .eq("id", assignmentId)
     .single();
 
   // Автоматическая проверка
   const score = assignment?.correct_answer
-    ? checkAnswer(answer, assignment.correct_answer, type)
+    ? checkAnswer(answer, assignment.correct_answer, type, assignment.options)
     : null;
 
   const { error } = await supabase.from("assignment_submissions").upsert(

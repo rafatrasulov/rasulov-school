@@ -69,15 +69,19 @@ export function AssignmentsList({
   const [error, setError] = useState<string | null>(null);
   const [type, setType] = useState<string>("text");
   const [options, setOptions] = useState<OptionItem[]>([{ label: "", value: "" }]);
+  const [correctAnswer, setCorrectAnswer] = useState<string>("");
   const router = useRouter();
 
   const showOptions = type === "single_choice" || type === "multiple_choice";
 
   useEffect(() => {
-    if (editing && showOptions) {
-      setOptions(parseOptions(editing.options));
-    } else if (editing && !showOptions) {
-      setOptions([{ label: "", value: "" }]);
+    if (editing) {
+      if (showOptions) {
+        setOptions(parseOptions(editing.options));
+      } else {
+        setOptions([{ label: "", value: "" }]);
+      }
+      setCorrectAnswer(editing.correct_answer || "");
     }
   }, [editing, showOptions]);
 
@@ -102,10 +106,18 @@ export function AssignmentsList({
     if (!editing) return;
     setError(null);
     formData.set("type", type);
+    if (showOptions) {
+      const opts = options
+        .filter((o) => o.label.trim())
+        .map((o) => ({ label: o.label.trim(), value: (o.value || o.label).trim().replace(/\s+/g, "_") || "v" }));
+      formData.set("options", JSON.stringify(opts));
+      formData.set("correct_answer", correctAnswer);
+    }
     const result = await updateAssignment(editing.id, topicId, sectionId, formData);
     if (result && 'error' in result) setError(result.error || null);
     else {
       setEditing(null);
+      setCorrectAnswer("");
       router.refresh();
     }
   }
@@ -187,10 +199,36 @@ export function AssignmentsList({
                 <Input id="edit_image_file" name="image_file" type="file" accept="image/*" className="rounded-xl" />
                 <p className="text-xs text-muted-foreground">Если загрузите фото, оно будет использовано вместо ссылки.</p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit_correct_answer">Правильный ответ</Label>
-                <Input id="edit_correct_answer" name="correct_answer" defaultValue={editing.correct_answer ?? ""} className="rounded-xl" />
-              </div>
+              {showOptions ? (
+                <div className="space-y-2">
+                  <Label htmlFor="edit_correct_answer_select">Правильный ответ *</Label>
+                  <Select value={correctAnswer} onValueChange={setCorrectAnswer} required>
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Выберите правильный ответ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options
+                        .filter(opt => opt.label.trim())
+                        .map((opt, i) => {
+                          const value = (opt.value || opt.label).trim().replace(/\s+/g, "_") || "v";
+                          return (
+                            <SelectItem key={i} value={value}>
+                              {opt.label}
+                            </SelectItem>
+                          );
+                        })}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Выберите правильный вариант из списка выше.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="edit_correct_answer">Правильный ответ</Label>
+                  <Input id="edit_correct_answer" name="correct_answer" defaultValue={editing.correct_answer ?? ""} className="rounded-xl" />
+                </div>
+              )}
               {!showOptions && <input type="hidden" name="options" value="[]" />}
               {showOptions && (
                 <div className="space-y-2">
