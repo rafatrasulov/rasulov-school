@@ -16,11 +16,11 @@ export default async function AdminSectionsPage() {
   return (
     <div>
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <h1 className="text-2xl font-bold text-foreground">Разделы курса</h1>
-        <SectionForm trigger={<Button className="rounded-xl gap-2"><Plus className="h-4 w-4" />Создать раздел</Button>} />
+        <h1 className="text-2xl font-bold text-foreground">Предметы</h1>
+        <SectionForm trigger={<Button className="rounded-xl gap-2"><Plus className="h-4 w-4" />Создать предмет</Button>} />
       </div>
       <p className="mt-1 text-muted-foreground">
-        Разделы видны ученикам в личном кабинете. Добавляйте темы и задания внутри раздела.
+        Предметы видны ученикам в личном кабинете. Добавляйте темы и задания внутри предмета.
       </p>
       <div className="mt-8">
         <SectionsList sections={sections ?? []} />

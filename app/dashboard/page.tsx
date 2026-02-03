@@ -25,7 +25,7 @@ export default async function DashboardPage() {
     <div className="container mx-auto max-w-6xl">
       <h1 className="text-2xl font-bold text-foreground">Личный кабинет</h1>
       <p className="mt-2 text-muted-foreground">
-        Разделы курса по вашему классу. Выберите раздел, чтобы перейти к темам и заданиям.
+        Предметы курса по вашему классу. Выберите предмет, чтобы перейти к темам и заданиям.
       </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

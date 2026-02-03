@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ChevronLeft, FileQuestion, Play } from "lucide-react";
 
 export default async function TopicPage({
@@ -23,6 +24,12 @@ export default async function TopicPage({
     .single();
 
   if (!topic) notFound();
+
+  const { data: section } = await supabase
+    .from("sections")
+    .select("id, title")
+    .eq("id", sectionId)
+    .single();
 
   const { data: lessons } = await supabase
     .from("lessons")
@@ -59,12 +66,10 @@ export default async function TopicPage({
 
   return (
     <div className="container mx-auto max-w-6xl">
-      <Button asChild variant="ghost" size="sm" className="rounded-xl mb-4 gap-2">
-        <Link href={`/dashboard/sections/${sectionId}`}>
-          <ChevronLeft className="h-4 w-4" />
-          Назад к разделу
-        </Link>
-      </Button>
+      <Breadcrumbs items={[
+        { label: section?.title || "Предмет", href: `/dashboard/sections/${sectionId}` },
+        { label: topic.title }
+      ]} />
       <h1 className="text-2xl font-bold text-foreground">{topic.title}</h1>
       <p className="mt-2 text-muted-foreground">Уроки и задания по теме</p>
 

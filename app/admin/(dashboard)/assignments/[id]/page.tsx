@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AdminBreadcrumbs } from "@/components/admin-breadcrumbs";
 import { ChevronLeft } from "lucide-react";
 import { SubmissionsList } from "./submissions-list";
 
@@ -27,6 +28,16 @@ export default async function AdminAssignmentSubmissionsPage({
     .select("id, title, section_id")
     .eq("id", assignment.topic_id)
     .single();
+
+  let section = null;
+  if (topic) {
+    const { data } = await supabase
+      .from("sections")
+      .select("id, title")
+      .eq("id", topic.section_id)
+      .single();
+    section = data;
+  }
 
   const { data: submissionsRaw } = await supabase
     .from("assignment_submissions")
@@ -66,23 +77,13 @@ export default async function AdminAssignmentSubmissionsPage({
 
   return (
     <div>
-      <Button
-        asChild
-        variant="ghost"
-        size="sm"
-        className="rounded-xl mb-4 gap-2"
-      >
-        <Link
-          href={
-            topic
-              ? `/admin/sections/${topic.section_id}/topics/${topic.id}`
-              : "/admin/sections"
-          }
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Назад к теме
-        </Link>
-      </Button>
+      {topic && section && (
+        <AdminBreadcrumbs items={[
+          { label: section.title, href: `/admin/sections/${topic.section_id}` },
+          { label: topic.title, href: `/admin/sections/${topic.section_id}/topics/${topic.id}` },
+          { label: assignment.title }
+        ]} />
+      )}
 
       <h1 className="text-2xl font-bold text-foreground">
         Ответы: {assignment.title}

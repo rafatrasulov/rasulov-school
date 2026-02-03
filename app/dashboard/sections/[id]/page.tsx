@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ChevronLeft, FolderOpen } from "lucide-react";
 
 export default async function SectionPage({
@@ -31,20 +32,15 @@ export default async function SectionPage({
 
   return (
     <div className="container mx-auto max-w-6xl">
-      <Button asChild variant="ghost" size="sm" className="rounded-xl mb-4 gap-2">
-        <Link href="/dashboard">
-          <ChevronLeft className="h-4 w-4" />
-          К разделам
-        </Link>
-      </Button>
+      <Breadcrumbs items={[{ label: section.title }]} />
       <h1 className="text-2xl font-bold text-foreground">{section.title}</h1>
-      <p className="mt-2 text-muted-foreground">Темы раздела</p>
+      <p className="mt-2 text-muted-foreground">Темы предмета</p>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {(topics ?? []).length === 0 ? (
           <Card className="rounded-2xl border-dashed border-border p-6 text-center sm:col-span-2 lg:col-span-3">
             <FolderOpen className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 text-muted-foreground">В этом разделе пока нет тем.</p>
+            <p className="mt-3 text-muted-foreground">В этом предмете пока нет тем.</p>
           </Card>
         ) : (
           (topics ?? []).map((topic) => (

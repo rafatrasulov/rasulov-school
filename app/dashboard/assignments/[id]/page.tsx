@@ -5,6 +5,7 @@ import { AssignmentForm } from "./assignment-form";
 import { ContentWithMath } from "@/components/content-with-math";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ChevronLeft, CheckCircle2, XCircle } from "lucide-react";
 
 export default async function AssignmentPage({
@@ -30,6 +31,16 @@ export default async function AssignmentPage({
     .eq("id", assignment.topic_id)
     .single();
 
+  let section = null;
+  if (topic) {
+    const { data } = await supabase
+      .from("sections")
+      .select("id, title")
+      .eq("id", topic.section_id)
+      .single();
+    section = data;
+  }
+
   // Fetch submission for current user
   const { data: { user } } = await supabase.auth.getUser();
   let submission = null;
@@ -45,12 +56,13 @@ export default async function AssignmentPage({
 
   return (
     <div className="container mx-auto max-w-3xl">
-      <Button asChild variant="ghost" size="sm" className="rounded-xl mb-4 gap-2">
-        <Link href={topic ? `/dashboard/sections/${topic.section_id}/topics/${topic.id}` : "/dashboard"}>
-          <ChevronLeft className="h-4 w-4" />
-          Назад к теме
-        </Link>
-      </Button>
+      {topic && section && (
+        <Breadcrumbs items={[
+          { label: section.title, href: `/dashboard/sections/${topic.section_id}` },
+          { label: topic.title, href: `/dashboard/sections/${topic.section_id}/topics/${topic.id}` },
+          { label: assignment.title }
+        ]} />
+      )}
 
       <Card className="rounded-2xl border-border/50 shadow-sm">
         <CardHeader>

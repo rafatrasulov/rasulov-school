@@ -6,6 +6,7 @@ import { LessonForm } from "./lesson-form";
 import { AssignmentForm } from "./assignment-form";
 import { LessonsList } from "./lessons-list";
 import { AssignmentsList } from "./assignments-list";
+import { AdminBreadcrumbs } from "@/components/admin-breadcrumbs";
 import { ChevronLeft, Plus } from "lucide-react";
 
 export default async function AdminTopicDetailPage({
@@ -34,12 +35,10 @@ export default async function AdminTopicDetailPage({
 
   return (
     <div>
-      <Button asChild variant="ghost" size="sm" className="rounded-xl mb-4 gap-2">
-        <Link href={`/admin/sections/${sectionId}`}>
-          <ChevronLeft className="h-4 w-4" />
-          К разделу «{section.title}»
-        </Link>
-      </Button>
+      <AdminBreadcrumbs items={[
+        { label: section.title, href: `/admin/sections/${sectionId}` },
+        { label: topic.title }
+      ]} />
       <h1 className="text-2xl font-bold text-foreground">{topic.title}</h1>
       <p className="mt-1 text-muted-foreground">Уроки и задания по теме.</p>
 

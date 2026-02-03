@@ -19,7 +19,7 @@ export function Footer() {
           
           {/* Колонка 2: Ссылки */}
           <div className="space-y-5 animate-slide-up" style={{animationDelay: '0.1s'}}>
-            <h4 className="text-2xl md:text-3xl font-bold text-foreground">Разделы</h4>
+            <h4 className="text-2xl md:text-3xl font-bold text-foreground">Предметы</h4>
             <nav className="flex flex-col gap-4">
               <Link href="/#calendar" className="text-xl text-muted-foreground hover:text-primary hover:translate-x-1 transition-all duration-300">
                 📅 Записаться на урок

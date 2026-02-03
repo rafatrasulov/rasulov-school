@@ -35,19 +35,11 @@ export default async function AdminDashboardLayout({
     <div className="min-h-screen flex flex-col md:flex-row">
       <aside className="w-full md:w-72 border-b md:border-b-0 md:border-r border-border bg-muted/30 md:bg-card p-5">
         <nav className="flex flex-row md:flex-col gap-1">
-          <span className="hidden md:block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Контент</span>
-          {isFirstTeacher && (
-            <Link href="/admin/landing">
-              <Button variant="ghost" className={navBtn} size="default">
-                <Home className={iconClass} />
-                Главная
-              </Button>
-            </Link>
-          )}
+          <span className="hidden md:block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Образование</span>
           <Link href="/admin/sections">
             <Button variant="ghost" className={navBtn} size="default">
               <BookOpen className={iconClass} />
-              Разделы
+              Предметы
             </Button>
           </Link>
           <Link href="/admin/diagnostic">
@@ -69,10 +61,11 @@ export default async function AdminDashboardLayout({
               Заявки
             </Button>
           </Link>
+          <span className="hidden md:block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-2">Ученики</span>
           <Link href="/admin/students">
             <Button variant="ghost" className={navBtn} size="default">
               <Users className={iconClass} />
-              Ученики
+              Все ученики
             </Button>
           </Link>
           <span className="hidden md:block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-2">Аккаунт</span>

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Home, Calendar } from "lucide-react";
 import { signOut } from "./actions";
 
 export default async function DashboardLayout({
@@ -36,15 +36,27 @@ export default async function DashboardLayout({
           </Link>
           <nav className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm" className="rounded-xl gap-2">
+              <Link href="/dashboard">
+                <Home className="h-4 w-4" />
+                <span className="hidden sm:inline">Предметы</span>
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm" className="rounded-xl gap-2">
+              <Link href="/#calendar">
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline">Запись</span>
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm" className="rounded-xl gap-2">
               <Link href="/dashboard/profile">
                 <User className="h-4 w-4" />
-                Профиль
+                <span className="hidden sm:inline">Профиль</span>
               </Link>
             </Button>
             <form action={signOut}>
               <Button type="submit" variant="ghost" size="sm" className="rounded-xl gap-2">
                 <LogOut className="h-4 w-4" />
-                Выход
+                <span className="hidden sm:inline">Выход</span>
               </Button>
             </form>
           </nav>
