@@ -589,19 +589,29 @@ GRANT EXECUTE ON FUNCTION create_booking(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEX
 GRANT EXECUTE ON FUNCTION create_booking(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, UUID, experience_level, preferred_messenger, BOOLEAN) TO authenticated;
 
 -- =============================================================================
+-- 016 (before 012): is_teacher() helper to avoid RLS self-reference on profiles
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION public.is_teacher()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'teacher'
+  );
+$$;
+
+-- =============================================================================
 -- 012: Teachers can read student profiles, update student submissions
 -- =============================================================================
 
 DROP POLICY IF EXISTS "Teachers can read student profiles" ON profiles;
 CREATE POLICY "Teachers can read student profiles" ON profiles
-  FOR SELECT USING (
-    role = 'student'
-    AND EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid()
-      AND role = 'teacher'
-    )
-  );
+  FOR SELECT USING (role = 'student' AND public.is_teacher());
 
 DROP POLICY IF EXISTS "Teachers can update student submissions" ON assignment_submissions;
 CREATE POLICY "Teachers can update student submissions" ON assignment_submissions

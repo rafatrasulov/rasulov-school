@@ -41,25 +41,27 @@ export default async function AdminAssignmentSubmissionsPage({
 
   const { data: submissionsRaw } = await supabase
     .from("assignment_submissions")
-    .select(`
-      id,
-      assignment_id,
-      user_id,
-      answer,
-      answer_json,
-      score,
-      teacher_feedback,
-      created_at,
-      updated_at,
-      profiles!assignment_submissions_user_id_fkey(full_name, email)
-    `)
+    .select("id, assignment_id, user_id, answer, answer_json, score, teacher_feedback, created_at, updated_at")
     .eq("assignment_id", id)
     .order("created_at", { ascending: false });
 
-  const submissions = submissionsRaw?.map(s => ({
+  const submissionsList = submissionsRaw ?? [];
+  const userIds = [...new Set(submissionsList.map((s) => s.user_id))];
+  const profileMap: Record<string, { full_name: string | null; email: string | null }> = {};
+  if (userIds.length > 0) {
+    const { data: profileRows } = await supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .in("id", userIds);
+    for (const p of profileRows ?? []) {
+      profileMap[p.id] = { full_name: p.full_name ?? null, email: p.email ?? null };
+    }
+  }
+
+  const submissions = submissionsList.map((s) => ({
     ...s,
-    profiles: Array.isArray(s.profiles) ? s.profiles[0] : s.profiles
-  })) ?? [];
+    profiles: profileMap[s.user_id] ?? null,
+  }));
 
   const { data: students } = await supabase
     .from("profiles")

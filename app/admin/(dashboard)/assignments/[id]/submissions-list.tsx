@@ -27,8 +27,17 @@ interface SubmissionRow {
   updated_at: string;
   profiles: {
     full_name: string | null;
-    email: string;
+    email: string | null;
   } | null;
+}
+
+function getDisplayAnswer(s: SubmissionRow): string {
+  if (s.answer && String(s.answer).trim()) return s.answer;
+  const j = s.answer_json;
+  if (j && typeof j === "object" && j !== null && "value" in j && j.value != null) {
+    return String(j.value);
+  }
+  return "";
 }
 
 interface SubmissionsListProps {
@@ -77,16 +86,16 @@ export function SubmissionsList({
 
   function checkAnswer(submission: SubmissionRow): boolean | null {
     if (!correctAnswer) return null;
-    
-    const normalizeAnswer = (str: string | null) => 
-      (str ?? "").toLowerCase().trim().replace(/\s+/g, " ");
+    const displayAnswer = getDisplayAnswer(submission);
+    const normalizeAnswer = (str: string) =>
+      str.toLowerCase().trim().replace(/\s+/g, " ");
 
     if (assignmentType === "single_choice" || assignmentType === "multiple_choice") {
-      return normalizeAnswer(submission.answer) === normalizeAnswer(correctAnswer);
+      return normalizeAnswer(displayAnswer) === normalizeAnswer(correctAnswer);
     }
-    
+
     if (assignmentType === "fraction" || assignmentType === "text") {
-      return normalizeAnswer(submission.answer) === normalizeAnswer(correctAnswer);
+      return normalizeAnswer(displayAnswer) === normalizeAnswer(correctAnswer);
     }
 
     return null;
@@ -127,7 +136,7 @@ export function SubmissionsList({
                   </td>
                   <td className="p-4">
                     <span className="line-clamp-2">
-                      {s.answer || "—"}
+                      {getDisplayAnswer(s) || "—"}
                     </span>
                   </td>
                   <td className="p-4">
@@ -190,7 +199,7 @@ export function SubmissionsList({
               <div>
                 <p className="text-sm text-muted-foreground mb-2">Ответ</p>
                 <div className="rounded-xl border border-border p-4 bg-muted/30">
-                  <p className="whitespace-pre-wrap">{detail.answer || "—"}</p>
+                  <p className="whitespace-pre-wrap">{getDisplayAnswer(detail) || "—"}</p>
                 </div>
               </div>
 

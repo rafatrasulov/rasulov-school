@@ -33,6 +33,7 @@ DROP TABLE IF EXISTS profiles CASCADE;
 DROP FUNCTION IF EXISTS create_booking(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, UUID, experience_level, preferred_messenger, BOOLEAN);
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 DROP FUNCTION IF EXISTS public.handle_user_email_update() CASCADE;
+DROP FUNCTION IF EXISTS public.is_teacher() CASCADE;
 DROP FUNCTION IF EXISTS set_updated_at() CASCADE;
 
 -- =============================================================================
