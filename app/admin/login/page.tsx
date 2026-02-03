@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
           Введите email и пароль от учётной записи.
         </p>
         <form action={formAction} className="mt-6 space-y-4">
-          {state?.error && (
+          {state && "error" in state && state.error && (
             <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
               {state.error}
             </div>
