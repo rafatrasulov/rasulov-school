@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Manrope } from "next/font/google";
 import "./globals.css";
 
@@ -12,15 +12,16 @@ const manrope = Manrope({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#0a0e1a",
+};
+
 export const metadata: Metadata = {
   title: "RasulovSchool — Репетитор по математике Расулов Рафат Абульфатович",
   description: "Онлайн-школа математики RasulovSchool. Индивидуальные уроки с репетитором Расуловым Рафатом Абульфатовичем.",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-  },
-  themeColor: "#0a0e1a",
 };
 
 export default function RootLayout({

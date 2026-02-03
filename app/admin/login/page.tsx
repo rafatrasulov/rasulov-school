@@ -1,34 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
+import { adminLogin } from "../actions";
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [state, formAction, isPending] = useActionState(
+    async (_: unknown, formData: FormData) => {
+      return adminLogin(formData);
+    },
+    null as { error?: string } | { redirect: true } | null
+  );
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-    const supabase = createClient();
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (err) {
-      setError(err.message === "Invalid login credentials" ? "Неверный email или пароль." : err.message);
-      return;
+  useEffect(() => {
+    if (state && "redirect" in state && state.redirect) {
+      window.location.href = "/admin/slots";
     }
-    router.push("/admin/slots");
-    router.refresh();
-  }
+  }, [state]);
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-muted/30">
@@ -37,37 +29,37 @@ export default function AdminLoginPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           Введите email и пароль от учётной записи.
         </p>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {error && (
+        <form action={formAction} className="mt-6 space-y-4">
+          {state?.error && (
             <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
+              {state.error}
             </div>
           )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="teacher@example.com"
               className="rounded-xl"
+              autoComplete="email"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Пароль</Label>
             <Input
               id="password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               required
               className="rounded-xl"
+              autoComplete="current-password"
             />
           </div>
-          <Button type="submit" className="w-full rounded-xl" disabled={loading}>
-            {loading ? "Вход..." : "Войти"}
+          <Button type="submit" className="w-full rounded-xl" disabled={isPending}>
+            {isPending ? "Вход..." : "Войти"}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">

@@ -1,7 +1,18 @@
 {
-  "name": "onlineschool",
+  "name": "dfd",
   "version": "0.1.0",
   "private": true,
+  "description": "Это инструкция для тех, кто никогда не настраивал такой проект. Мы пройдём всё по шагам, по кнопкам, как в игре: что нажать, куда вписать, что должно получиться.",
+  "homepage": "https://github.com/rafatrasulov/rasulov-school#readme",
+  "bugs": {
+    "url": "https://github.com/rafatrasulov/rasulov-school/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafatrasulov/rasulov-school.git"
+  },
+  "license": "ISC",
+  "author": "",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
