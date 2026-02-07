@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Hero } from "@/components/landing/hero";
+import { PriceSection } from "@/components/landing/price-section";
 import { SlotCalendar } from "@/components/landing/slot-calendar";
 import type { Profile, Slot } from "@/lib/database.types";
 
@@ -59,7 +60,8 @@ export default async function HomePage() {
     return (
       <main className="min-h-screen">
         <Hero teacher={teacher as Profile | null} slots={slots as Slot[] ?? []} />
-        <section className="w-full py-16 md:py-24 relative overflow-hidden bg-gradient-to-br from-secondary/30 via-white to-primary/5" id="calendar">
+        <PriceSection />
+        <section className="w-full py-12 md:py-24 relative overflow-hidden bg-gradient-to-br from-secondary/30 via-white to-primary/5" id="calendar">
           <div className="absolute inset-0" style={{backgroundImage: 'radial-gradient(rgba(13,148,136,0.08) 1px, transparent 1px)', backgroundSize: '24px 24px'}} aria-hidden />
           <SlotCalendar 
             slots={slots as Slot[] ?? []} 
@@ -99,11 +101,12 @@ export default async function HomePage() {
             );
           case "calendar":
             return (
-              <section 
-                key={block.id} 
-                className={`w-full py-16 md:py-24 relative overflow-hidden ${sectionBg}`}
-                id="calendar"
-              >
+              <section key={block.id} className="relative">
+                <PriceSection />
+                <section 
+                  className={`w-full py-12 md:py-24 relative overflow-hidden ${sectionBg}`}
+                  id="calendar"
+                >
                 {pattern}
                 <SlotCalendar
                   slots={slots as Slot[] ?? []}
@@ -111,6 +114,7 @@ export default async function HomePage() {
                   description={(props.description as string) ?? "Выберите удобное время и нажмите «Записаться»."}
                   rangeEnd={end}
                 />
+                </section>
               </section>
             );
           case "benefits":
