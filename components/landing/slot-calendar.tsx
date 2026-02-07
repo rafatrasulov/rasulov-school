@@ -56,13 +56,16 @@ interface SlotCalendarProps {
   title?: string;
   description?: string;
   headerAction?: React.ReactNode;
+  /** Конец диапазона (ISO), до которого можно листать недели (включительно). */
+  rangeEnd?: string;
 }
 
 export function SlotCalendar({ 
   slots, 
   title = "Свободные слоты", 
   description = "Выберите удобное время и нажмите «Записаться».", 
-  headerAction 
+  headerAction,
+  rangeEnd,
 }: SlotCalendarProps) {
   const today = useMemo(() => getWeekStart(new Date()), []);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -73,6 +76,17 @@ export function SlotCalendar({
     d.setDate(d.getDate() + weekOffset * 7);
     return d;
   }, [today, weekOffset]);
+
+  const maxWeekOffset = useMemo(() => {
+    if (!rangeEnd) return 2;
+    const endDate = new Date(rangeEnd);
+    const lastDay = new Date(endDate);
+    lastDay.setDate(lastDay.getDate() - 1);
+    const endWeekStart = getWeekStart(lastDay);
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const weeks = Math.max(0, Math.floor((endWeekStart.getTime() - today.getTime()) / msPerWeek));
+    return weeks;
+  }, [today, rangeEnd]);
 
   const weekDays = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
@@ -97,7 +111,7 @@ export function SlotCalendar({
   }, [slots, weekDays]);
 
   const canGoPrev = weekOffset > 0;
-  const canGoNext = weekOffset < 2;
+  const canGoNext = weekOffset < maxWeekOffset;
 
   return (
     <div id="calendar" className="glass rounded-xl overflow-hidden scroll-mt-20">

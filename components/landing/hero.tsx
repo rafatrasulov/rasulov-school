@@ -40,11 +40,11 @@ export function Hero(props?: HeroProps | null) {
         aria-hidden
       />
       
-      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center animate-fade-in">
-        <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold gradient-text leading-tight mb-8">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center animate-fade-in">
+        <h1 className="text-[clamp(2rem,10vw,6rem)] sm:text-7xl md:text-8xl lg:text-9xl font-bold gradient-text leading-tight mb-6 sm:mb-8">
           {title}
         </h1>
-        <p className="text-2xl sm:text-3xl md:text-4xl text-foreground/80 max-w-4xl mx-auto leading-relaxed font-medium">
+        <p className="text-[clamp(0.9rem,4vw,1.25rem)] sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl text-foreground/80 max-w-4xl mx-auto leading-relaxed font-medium">
           {subtitle}
         </p>
         

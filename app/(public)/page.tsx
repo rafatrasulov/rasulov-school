@@ -3,15 +3,14 @@ import { Hero } from "@/components/landing/hero";
 import { SlotCalendar } from "@/components/landing/slot-calendar";
 import type { Profile, Slot } from "@/lib/database.types";
 
-function getWeekBounds(weekOffset: number) {
+function getSlotsDateRange() {
   const now = new Date();
   const day = now.getDay();
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+  const mondayOffset = day === 0 ? -6 : 1 - day;
   const start = new Date(now);
-  start.setDate(diff);
+  start.setDate(now.getDate() + mondayOffset);
   start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 21); // 3 weeks
+  const end = new Date(now.getFullYear(), now.getMonth() + 2, 1, 0, 0, 0, 0);
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
@@ -27,7 +26,7 @@ interface LandingBlockRow {
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const { start, end } = getWeekBounds(0);
+  const { start, end } = getSlotsDateRange();
 
   const [
     { data: blocks },
@@ -66,6 +65,7 @@ export default async function HomePage() {
             slots={slots as Slot[] ?? []} 
             title="Свободные слоты"
             description="Выберите удобное время и нажмите «Записаться»."
+            rangeEnd={end}
           />
         </section>
       </main>
@@ -109,6 +109,7 @@ export default async function HomePage() {
                   slots={slots as Slot[] ?? []}
                   title={(props.title as string) ?? "Свободные слоты"}
                   description={(props.description as string) ?? "Выберите удобное время и нажмите «Записаться»."}
+                  rangeEnd={end}
                 />
               </section>
             );
